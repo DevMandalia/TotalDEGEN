@@ -1,29 +1,54 @@
 
 import { useState } from "react";
-import { Search, Bell, User, Menu, Home, TrendingUp, BarChart3 } from "lucide-react";
+import { Search, Bell, User, Clover, Home, TrendingUp, BarChart3, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useNavigate, useLocation } from "react-router-dom";
 
-const TradingNavigation = () => {
+interface TradingNavigationProps {
+  onAccountClick: () => void;
+}
+
+const TradingNavigation = ({ onAccountClick }: TradingNavigationProps) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [connectionStatus] = useState("Live"); // Can be "Live", "Testnet", or "Paper Trading"
 
   const navItems = [
     { name: "Dashboard", path: "/trading", icon: Home },
     { name: "Positions", path: "/position", icon: TrendingUp },
-    { name: "Correlation", path: "/correlation", icon: BarChart3 },
+    { name: "Markets", path: "/correlation", icon: BarChart3 },
+    { name: "Settings", path: "/settings", icon: Settings },
   ];
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "Live": return "text-green-400";
+      case "Testnet": return "text-yellow-400";
+      case "Paper Trading": return "text-blue-400";
+      default: return "text-gray-400";
+    }
+  };
 
   return (
     <nav className="border-b border-gray-800 bg-black px-6 py-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-8">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-              <span className="text-black font-bold text-sm">D</span>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onAccountClick}
+              className="w-8 h-8 bg-green-500 rounded-full hover:bg-green-600 flex items-center justify-center"
+            >
+              <Clover className="w-4 h-4 text-black" />
+            </Button>
+            <div className="flex items-center gap-3">
+              <span className="font-semibold text-lg">Total DEGEN</span>
+              <span className={`text-xs font-medium ${getStatusColor(connectionStatus)}`}>
+                {connectionStatus}
+              </span>
             </div>
-            <span className="font-semibold text-lg">DEGEN</span>
           </div>
           
           <div className="flex items-center gap-1">

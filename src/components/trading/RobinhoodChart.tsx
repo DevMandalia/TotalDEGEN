@@ -6,9 +6,9 @@ const RobinhoodChart = () => {
   const [timeframe, setTimeframe] = useState("1W");
   
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 font-mono">
+    <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 font-mono">
       {/* Timeframe buttons */}
-      <div className="flex gap-1 mb-8">
+      <div className="flex gap-1 mb-4">
         {["1D", "1W", "1M", "3M", "1Y", "ALL"].map((period) => (
           <Button
             key={period}
