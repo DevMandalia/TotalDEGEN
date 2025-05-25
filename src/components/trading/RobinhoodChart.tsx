@@ -8,7 +8,7 @@ const RobinhoodChart = () => {
   return (
     <div className="bg-gray-900/50 backdrop-blur-sm rounded-lg p-6 border border-gray-800/50">
       {/* Chart area */}
-      <div className="h-64 bg-gradient-to-br from-gray-800/30 to-gray-900/30 rounded-lg flex items-center justify-center relative overflow-hidden">
+      <div className="h-80 bg-gradient-to-br from-gray-800/30 to-gray-900/30 rounded-lg flex items-center justify-center relative overflow-hidden">
         {/* Background animation */}
         <div className="absolute inset-0 opacity-20">
           <div className="absolute w-full h-full bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-green-500/20 animate-pulse"></div>
