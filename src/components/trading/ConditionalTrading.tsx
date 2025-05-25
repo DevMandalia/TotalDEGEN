@@ -176,10 +176,16 @@ const ConditionalTrading = () => {
         <div className="flex items-center justify-between mb-4">
           <h4 className="text-white font-medium">Entry When</h4>
           <ToggleGroup type="single" value={entryConnector} onValueChange={setEntryConnector}>
-            <ToggleGroupItem value="and" className="backdrop-blur-sm bg-white/10 border border-white/20 text-white data-[state=on]:bg-blue-500/20">
+            <ToggleGroupItem 
+              value="and" 
+              className="backdrop-blur-sm bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-400/30 text-emerald-300 data-[state=on]:bg-gradient-to-r data-[state=on]:from-emerald-500/40 data-[state=on]:to-teal-500/40 data-[state=on]:border-emerald-400/50 data-[state=on]:text-emerald-200 transition-all duration-300"
+            >
               AND
             </ToggleGroupItem>
-            <ToggleGroupItem value="or" className="backdrop-blur-sm bg-white/10 border border-white/20 text-white data-[state=on]:bg-blue-500/20">
+            <ToggleGroupItem 
+              value="or" 
+              className="backdrop-blur-sm bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-400/30 text-amber-300 data-[state=on]:bg-gradient-to-r data-[state=on]:from-amber-500/40 data-[state=on]:to-orange-500/40 data-[state=on]:border-amber-400/50 data-[state=on]:text-amber-200 transition-all duration-300"
+            >
               OR
             </ToggleGroupItem>
           </ToggleGroup>
@@ -243,7 +249,7 @@ const ConditionalTrading = () => {
               variant="ghost"
               onClick={() => addCondition('entry')}
               disabled={entryConditions.length >= 8}
-              className="backdrop-blur-sm bg-white/10 border border-white/20 text-white hover:bg-white/20"
+              className="backdrop-blur-sm bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-400/30 text-blue-200 hover:bg-gradient-to-r hover:from-blue-500/30 hover:to-purple-500/30 hover:border-blue-400/50 hover:text-blue-100 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Plus className="w-4 h-4 mr-2" />
               Add New
@@ -257,10 +263,16 @@ const ConditionalTrading = () => {
         <div className="flex items-center justify-between mb-4">
           <h4 className="text-white font-medium">Exit When</h4>
           <ToggleGroup type="single" value={exitConnector} onValueChange={setExitConnector}>
-            <ToggleGroupItem value="and" className="backdrop-blur-sm bg-white/10 border border-white/20 text-white data-[state=on]:bg-blue-500/20">
+            <ToggleGroupItem 
+              value="and" 
+              className="backdrop-blur-sm bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-400/30 text-emerald-300 data-[state=on]:bg-gradient-to-r data-[state=on]:from-emerald-500/40 data-[state=on]:to-teal-500/40 data-[state=on]:border-emerald-400/50 data-[state=on]:text-emerald-200 transition-all duration-300"
+            >
               AND
             </ToggleGroupItem>
-            <ToggleGroupItem value="or" className="backdrop-blur-sm bg-white/10 border border-white/20 text-white data-[state=on]:bg-blue-500/20">
+            <ToggleGroupItem 
+              value="or" 
+              className="backdrop-blur-sm bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-400/30 text-amber-300 data-[state=on]:bg-gradient-to-r data-[state=on]:from-amber-500/40 data-[state=on]:to-orange-500/40 data-[state=on]:border-amber-400/50 data-[state=on]:text-amber-200 transition-all duration-300"
+            >
               OR
             </ToggleGroupItem>
           </ToggleGroup>
@@ -324,7 +336,7 @@ const ConditionalTrading = () => {
               variant="ghost"
               onClick={() => addCondition('exit')}
               disabled={exitConditions.length >= 8}
-              className="backdrop-blur-sm bg-white/10 border border-white/20 text-white hover:bg-white/20"
+              className="backdrop-blur-sm bg-gradient-to-r from-pink-500/20 to-rose-500/20 border border-pink-400/30 text-pink-200 hover:bg-gradient-to-r hover:from-pink-500/30 hover:to-rose-500/30 hover:border-pink-400/50 hover:text-pink-100 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Plus className="w-4 h-4 mr-2" />
               Add New
@@ -391,7 +403,7 @@ const ConditionalTrading = () => {
             variant="ghost"
             onClick={addAction}
             disabled={actions.length >= 4}
-            className="backdrop-blur-sm bg-white/10 border border-white/20 text-white hover:bg-white/20"
+            className="backdrop-blur-sm bg-gradient-to-r from-indigo-500/20 to-cyan-500/20 border border-indigo-400/30 text-indigo-200 hover:bg-gradient-to-r hover:from-indigo-500/30 hover:to-cyan-500/30 hover:border-indigo-400/50 hover:text-indigo-100 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Plus className="w-4 h-4 mr-2" />
             Add Action
