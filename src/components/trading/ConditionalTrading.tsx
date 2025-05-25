@@ -90,6 +90,23 @@ const ConditionalTrading = () => {
     setEntryConditions([...entryConditions, newCondition]);
   };
 
+  const addAction = (actionType: 'true' | 'false') => {
+    const newAction: Action = {
+      id: Date.now().toString(),
+      orderType: "Market",
+      side: actionType === 'true' ? "Buy" : "Sell",
+      symbol: "BTC",
+      quantity: "",
+      timeInForce: "GTC"
+    };
+
+    if (actionType === 'true') {
+      setTrueActions([...trueActions, newAction]);
+    } else {
+      setFalseActions([...falseActions, newAction]);
+    }
+  };
+
   const removeCondition = (id: string) => {
     setEntryConditions(entryConditions.filter(c => c.id !== id));
   };
