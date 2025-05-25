@@ -174,7 +174,7 @@ const ConditionalTrading = () => {
       {/* Entry Conditions */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
-          <h4 className="text-white font-medium">Entry When</h4>
+          <h4 className="text-white font-medium">If</h4>
           <ToggleGroup type="single" value={entryConnector} onValueChange={setEntryConnector}>
             <ToggleGroupItem 
               value="and" 
@@ -261,7 +261,7 @@ const ConditionalTrading = () => {
       {/* Exit Conditions */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
-          <h4 className="text-white font-medium">Exit When</h4>
+          <h4 className="text-white font-medium">Else</h4>
           <ToggleGroup type="single" value={exitConnector} onValueChange={setExitConnector}>
             <ToggleGroupItem 
               value="and" 
