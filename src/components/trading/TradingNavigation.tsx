@@ -56,7 +56,7 @@ const TradingNavigation = ({ onAccountClick, onSettingsClick }: TradingNavigatio
   };
 
   return (
-    <nav className="border-b border-gray-800 bg-black px-6 py-3">
+    <nav className="border-b border-gray-800 bg-black px-6 py-3 relative">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-8">
           <div className="flex items-center gap-2">
@@ -78,24 +78,31 @@ const TradingNavigation = ({ onAccountClick, onSettingsClick }: TradingNavigatio
             </div>
           </div>
           
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 relative">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
               return (
-                <button
-                  key={item.name}
-                  onClick={(e) => handleNavClick(item.path, e)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm transition-colors cursor-pointer border-none bg-transparent ${
-                    isActive 
-                      ? "bg-green-600 text-white hover:bg-green-700" 
-                      : "text-gray-400 hover:text-white hover:bg-gray-800"
-                  }`}
-                  style={{ pointerEvents: 'auto' }}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span>{item.name}</span>
-                </button>
+                <div key={item.name} className="relative">
+                  <button
+                    className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm transition-colors cursor-pointer border-none bg-transparent ${
+                      isActive 
+                        ? "bg-green-600 text-white hover:bg-green-700" 
+                        : "text-gray-400 hover:text-white hover:bg-gray-800"
+                    }`}
+                    style={{ pointerEvents: 'auto' }}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span>{item.name}</span>
+                  </button>
+                  {/* Overlay clickable button */}
+                  <button
+                    onClick={(e) => handleNavClick(item.path, e)}
+                    className="absolute inset-0 z-10 bg-transparent border-none cursor-pointer"
+                    style={{ pointerEvents: 'auto' }}
+                    aria-label={`Navigate to ${item.name}`}
+                  />
+                </div>
               );
             })}
           </div>
@@ -110,21 +117,37 @@ const TradingNavigation = ({ onAccountClick, onSettingsClick }: TradingNavigatio
             />
           </div>
           
-          <button 
-            className="hover:bg-gray-800 text-gray-400 cursor-pointer p-2 rounded-md border-none bg-transparent"
-            onClick={handleNotificationClick}
-            style={{ pointerEvents: 'auto' }}
-          >
-            <Bell className="w-5 h-5" />
-          </button>
+          <div className="relative">
+            <button 
+              className="hover:bg-gray-800 text-gray-400 cursor-pointer p-2 rounded-md border-none bg-transparent"
+              style={{ pointerEvents: 'auto' }}
+            >
+              <Bell className="w-5 h-5" />
+            </button>
+            {/* Overlay clickable button */}
+            <button
+              onClick={handleNotificationClick}
+              className="absolute inset-0 z-10 bg-transparent border-none cursor-pointer"
+              style={{ pointerEvents: 'auto' }}
+              aria-label="Notifications"
+            />
+          </div>
           
-          <button 
-            className="hover:bg-gray-800 text-gray-400 cursor-pointer p-2 rounded-md border-none bg-transparent"
-            onClick={handleSettingsClick}
-            style={{ pointerEvents: 'auto' }}
-          >
-            <Settings className="w-5 h-5" />
-          </button>
+          <div className="relative">
+            <button 
+              className="hover:bg-gray-800 text-gray-400 cursor-pointer p-2 rounded-md border-none bg-transparent"
+              style={{ pointerEvents: 'auto' }}
+            >
+              <Settings className="w-5 h-5" />
+            </button>
+            {/* Overlay clickable button */}
+            <button
+              onClick={handleSettingsClick}
+              className="absolute inset-0 z-10 bg-transparent border-none cursor-pointer"
+              style={{ pointerEvents: 'auto' }}
+              aria-label="Settings"
+            />
+          </div>
         </div>
       </div>
     </nav>
