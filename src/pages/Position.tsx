@@ -86,65 +86,65 @@ const Position = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
-          {/* Chart Section */}
-          <div className="xl:col-span-3">
-            <Card className="bg-gray-900 border border-gray-800 p-6 mb-6">
-              <div className="flex justify-between items-center mb-6">
-                <div>
-                  <div className="text-3xl font-bold mb-2 bg-gradient-to-r from-blue-400 via-purple-500 to-green-400 bg-clip-text text-transparent">
-                    ${position.currentPrice.toLocaleString()}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {position.isProfit ? (
-                      <ArrowUpRight className="w-4 h-4 text-green-400" />
-                    ) : (
-                      <ArrowDownRight className="w-4 h-4 text-red-400" />
-                    )}
-                    <span className={`text-sm font-medium ${position.isProfit ? 'text-green-400' : 'text-red-400'}`}>
-                      ${Math.abs(position.pnl).toFixed(2)} ({position.pnlPercent}%)
-                    </span>
-                  </div>
-                </div>
-                <Button 
-                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 font-bold"
-                  onClick={() => {/* Handle hedging ideas */}}
-                >
-                  💡 Hedging Ideas
-                </Button>
+        {/* Full Width Chart Section */}
+        <Card className="bg-gray-900 border border-gray-800 p-6 mb-6">
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <div className="text-3xl font-bold mb-2 bg-gradient-to-r from-blue-400 via-purple-500 to-green-400 bg-clip-text text-transparent">
+                ${position.currentPrice.toLocaleString()}
               </div>
-              <DetailedPositionChart 
-                symbol={position.symbol}
-                entryPrice={position.entryPrice}
-                stopLoss={position.stopLoss}
-                takeProfit={position.takeProfit}
-                currentPrice={position.currentPrice}
-              />
-            </Card>
-
-            {/* Position Details Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              <Card className="bg-gray-900 border border-gray-800 p-4">
-                <div className="text-gray-400 text-xs font-medium mb-1">Size</div>
-                <div className="text-white font-bold text-lg">{position.size} {position.symbol}</div>
-              </Card>
-              <Card className="bg-gray-900 border border-gray-800 p-4">
-                <div className="text-gray-400 text-xs font-medium mb-1">Entry Price</div>
-                <div className="text-blue-400 font-bold text-lg">${position.entryPrice.toLocaleString()}</div>
-              </Card>
-              <Card className="bg-gray-900 border border-gray-800 p-4">
-                <div className="text-gray-400 text-xs font-medium mb-1">Margin Used</div>
-                <div className="text-yellow-400 font-bold text-lg">${position.marginUsed.toFixed(2)}</div>
-              </Card>
-              <Card className="bg-gray-900 border border-gray-800 p-4">
-                <div className="text-gray-400 text-xs font-medium mb-1">Unrealized PnL</div>
-                <div className={`font-bold text-lg ${position.isProfit ? 'text-green-400' : 'text-red-400'}`}>
-                  ${position.unrealizedPnl.toFixed(2)}
-                </div>
-              </Card>
+              <div className="flex items-center gap-2">
+                {position.isProfit ? (
+                  <ArrowUpRight className="w-4 h-4 text-green-400" />
+                ) : (
+                  <ArrowDownRight className="w-4 h-4 text-red-400" />
+                )}
+                <span className={`text-sm font-medium ${position.isProfit ? 'text-green-400' : 'text-red-400'}`}>
+                  ${Math.abs(position.pnl).toFixed(2)} ({position.pnlPercent}%)
+                </span>
+              </div>
             </div>
+            <Button 
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 font-bold"
+              onClick={() => {/* Handle hedging ideas */}}
+            >
+              💡 Hedging Ideas
+            </Button>
+          </div>
+          <DetailedPositionChart 
+            symbol={position.symbol}
+            entryPrice={position.entryPrice}
+            stopLoss={position.stopLoss}
+            takeProfit={position.takeProfit}
+            currentPrice={position.currentPrice}
+          />
+        </Card>
 
-            {/* Risk Management */}
+        {/* Position Details Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <Card className="bg-gray-900 border border-gray-800 p-4">
+            <div className="text-gray-400 text-xs font-medium mb-1">Size</div>
+            <div className="text-white font-bold text-lg">{position.size} {position.symbol}</div>
+          </Card>
+          <Card className="bg-gray-900 border border-gray-800 p-4">
+            <div className="text-gray-400 text-xs font-medium mb-1">Entry Price</div>
+            <div className="text-blue-400 font-bold text-lg">${position.entryPrice.toLocaleString()}</div>
+          </Card>
+          <Card className="bg-gray-900 border border-gray-800 p-4">
+            <div className="text-gray-400 text-xs font-medium mb-1">Margin Used</div>
+            <div className="text-yellow-400 font-bold text-lg">${position.marginUsed.toFixed(2)}</div>
+          </Card>
+          <Card className="bg-gray-900 border border-gray-800 p-4">
+            <div className="text-gray-400 text-xs font-medium mb-1">Unrealized PnL</div>
+            <div className={`font-bold text-lg ${position.isProfit ? 'text-green-400' : 'text-red-400'}`}>
+              ${position.unrealizedPnl.toFixed(2)}
+            </div>
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Risk Management */}
+          <div className="lg:col-span-2">
             <Card className="bg-gray-900 border border-gray-800 p-6">
               <h3 className="text-lg font-bold text-white mb-4 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
                 Risk Management
@@ -175,61 +175,59 @@ const Position = () => {
             </Card>
           </div>
 
-          {/* Order Types Panel */}
-          <div className="space-y-6">
-            <Card className="bg-gray-900 border border-gray-800 p-6">
-              <h3 className="text-lg font-bold text-white mb-4 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-                Order Types
-              </h3>
-              <div className="space-y-3">
-                {orderTypes.map((order, index) => {
-                  const IconComponent = order.icon;
-                  return (
-                    <Button
-                      key={index}
-                      className={`w-full ${order.color} text-white font-bold py-3 px-4 rounded-lg transition-all duration-200 flex items-center gap-2`}
-                      onClick={() => {/* Handle order type */}}
-                    >
-                      <IconComponent className="w-4 h-4" />
-                      {order.type}
-                    </Button>
-                  );
-                })}
+          {/* Quick Stats */}
+          <Card className="bg-gray-900 border border-gray-800 p-6">
+            <h3 className="text-lg font-bold text-white mb-4 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+              Quick Stats
+            </h3>
+            <div className="space-y-3">
+              <div className="flex justify-between">
+                <span className="text-gray-400 text-sm">Breakeven</span>
+                <span className="text-yellow-400 font-medium">${position.breakeven.toLocaleString()}</span>
               </div>
-            </Card>
-
-            {/* Quick Stats */}
-            <Card className="bg-gray-900 border border-gray-800 p-6">
-              <h3 className="text-lg font-bold text-white mb-4 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-                Quick Stats
-              </h3>
-              <div className="space-y-3">
+              <div className="flex justify-between">
+                <span className="text-gray-400 text-sm">Trading Fees</span>
+                <span className="text-gray-300 font-medium">${position.fees.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400 text-sm">Funding Fees</span>
+                <span className={`font-medium ${position.fundingFees < 0 ? 'text-red-400' : 'text-green-400'}`}>
+                  ${position.fundingFees.toFixed(2)}
+                </span>
+              </div>
+              <div className="border-t border-gray-700 pt-2 mt-2">
                 <div className="flex justify-between">
-                  <span className="text-gray-400 text-sm">Breakeven</span>
-                  <span className="text-yellow-400 font-medium">${position.breakeven.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400 text-sm">Trading Fees</span>
-                  <span className="text-gray-300 font-medium">${position.fees.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400 text-sm">Funding Fees</span>
-                  <span className={`font-medium ${position.fundingFees < 0 ? 'text-red-400' : 'text-green-400'}`}>
-                    ${position.fundingFees.toFixed(2)}
+                  <span className="text-gray-400 text-sm">Total PnL</span>
+                  <span className={`font-bold ${position.isProfit ? 'text-green-400' : 'text-red-400'}`}>
+                    ${(position.pnl - position.fees + position.fundingFees).toFixed(2)}
                   </span>
                 </div>
-                <div className="border-t border-gray-700 pt-2 mt-2">
-                  <div className="flex justify-between">
-                    <span className="text-gray-400 text-sm">Total PnL</span>
-                    <span className={`font-bold ${position.isProfit ? 'text-green-400' : 'text-red-400'}`}>
-                      ${(position.pnl - position.fees + position.fundingFees).toFixed(2)}
-                    </span>
-                  </div>
-                </div>
               </div>
-            </Card>
-          </div>
+            </div>
+          </Card>
         </div>
+
+        {/* Order Types Panel - Now Below */}
+        <Card className="bg-gray-900 border border-gray-800 p-6 mt-6">
+          <h3 className="text-lg font-bold text-white mb-4 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+            Order Types
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+            {orderTypes.map((order, index) => {
+              const IconComponent = order.icon;
+              return (
+                <Button
+                  key={index}
+                  className={`${order.color} text-white font-bold py-3 px-4 rounded-lg transition-all duration-200 flex items-center gap-2`}
+                  onClick={() => {/* Handle order type */}}
+                >
+                  <IconComponent className="w-4 h-4" />
+                  {order.type}
+                </Button>
+              );
+            })}
+          </div>
+        </Card>
       </div>
 
       <ExchangeConnectionModal 
