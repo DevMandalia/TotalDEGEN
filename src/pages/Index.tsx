@@ -63,8 +63,8 @@ const Index = () => {
             transition={{ delay: 0.4 }}
             className="text-lg md:text-xl text-gray-200 mb-8 max-w-2xl text-left"
           >
-            Leveraging basic features and institutional-grade order control, we believe degens can come out way WAY ahead.{" "}
-            <span className="text-white"> It's time to channel your inner degen. </span>
+            Leveraging basic features and institutional-grade order control, we believe degens can come out way WAY ahead{" "}
+            <span className="text-white"> It's time to channel your inner degen </span>
           </motion.p>
           
           <motion.div
@@ -136,7 +136,7 @@ const Index = () => {
             Ready to lose?
           </h2>
           <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Join thousands of traders who lost money this way....
+            Join thousands of traders who lost money this way
           </p>
           <Button size="lg" className="button-gradient" onClick={handleGambleClick}>
             I feel hot today
