@@ -16,14 +16,19 @@ interface Condition {
   parameter?: string;
   operator: string;
   value: string;
+  connector?: string;
+  hasOpenParen?: boolean;
+  hasCloseParen?: boolean;
 }
 
 interface Action {
   id: string;
-  type: string;
-  symbol?: string;
   orderType: string;
-  quantity?: string;
+  side: string;
+  symbol: string;
+  quantity: string;
+  price?: string;
+  timeInForce: string;
 }
 
 interface Position {
@@ -63,15 +68,13 @@ const ConditionalTrading = () => {
   const [entryConditions, setEntryConditions] = useState<Condition[]>([
     { id: "1", type: "Open", operator: ">", value: "" }
   ]);
-  const [entryConnector, setEntryConnector] = useState("and");
   
-  const [exitConditions, setExitConditions] = useState<Condition[]>([
-    { id: "1", type: "Close", operator: ">", value: "" }
+  const [trueActions, setTrueActions] = useState<Action[]>([
+    { id: "1", orderType: "Market", side: "Buy", symbol: "BTC", quantity: "", timeInForce: "GTC" }
   ]);
-  const [exitConnector, setExitConnector] = useState("and");
   
-  const [actions, setActions] = useState<Action[]>([
-    { id: "1", type: "Close Position", orderType: "Market", symbol: "BTC" }
+  const [falseActions, setFalseActions] = useState<Action[]>([
+    { id: "1", orderType: "Market", side: "Sell", symbol: "BTC", quantity: "", timeInForce: "GTC" }
   ]);
 
   const [assetSearchOpen, setAssetSearchOpen] = useState(false);
@@ -167,6 +170,10 @@ const ConditionalTrading = () => {
     "Price", "Market Cap", "24h Volume"
   ];
 
+  const orderTypes = ["Market", "Limit", "Stop", "Stop Limit", "OCO"];
+  const orderSides = ["Buy", "Sell"];
+  const timeInForceOptions = ["GTC", "IOC", "FOK", "Day"];
+
   const showMorePositions = () => {
     if (visiblePositions.length < Math.min(allPositions.length, 10)) {
       setVisiblePositions([...visiblePositions, allPositions[visiblePositions.length]]);
@@ -181,67 +188,70 @@ const ConditionalTrading = () => {
     setVisibleParams(prev => ({ ...prev, [param]: !prev[param] }));
   };
 
-  const actionTypes = [
-    "Close Position", "Open Position", "Modify Stop Loss",
-    "Modify Take Profit", "Cancel Orders", "Send Alert"
-  ];
-
-  const addCondition = (type: 'entry' | 'exit') => {
+  const addCondition = (afterIndex: number, connector: string) => {
     const newCondition: Condition = {
       id: Date.now().toString(),
       type: "RSI",
       operator: ">",
-      value: ""
+      value: "",
+      connector
     };
 
-    if (type === 'entry') {
-      if (entryConditions.length < 8) {
-        setEntryConditions([...entryConditions, newCondition]);
-      }
+    const newConditions = [...entryConditions];
+    newConditions.splice(afterIndex + 1, 0, newCondition);
+    setEntryConditions(newConditions);
+  };
+
+  const removeCondition = (id: string) => {
+    setEntryConditions(entryConditions.filter(c => c.id !== id));
+  };
+
+  const updateCondition = (id: string, field: string, value: string) => {
+    setEntryConditions(entryConditions.map(c => c.id === id ? { ...c, [field]: value } : c));
+  };
+
+  const toggleParenthesis = (id: string, type: 'open' | 'close') => {
+    setEntryConditions(entryConditions.map(c => 
+      c.id === id 
+        ? { ...c, [type === 'open' ? 'hasOpenParen' : 'hasCloseParen']: !c[type === 'open' ? 'hasOpenParen' : 'hasCloseParen'] }
+        : c
+    ));
+  };
+
+  const addAction = (type: 'true' | 'false') => {
+    const newAction: Action = {
+      id: Date.now().toString(),
+      orderType: "Market",
+      side: "Buy",
+      symbol: "BTC",
+      quantity: "",
+      timeInForce: "GTC"
+    };
+
+    if (type === 'true') {
+      setTrueActions([...trueActions, newAction]);
     } else {
-      if (exitConditions.length < 8) {
-        setExitConditions([...exitConditions, newCondition]);
-      }
+      setFalseActions([...falseActions, newAction]);
     }
   };
 
-  const removeCondition = (id: string, type: 'entry' | 'exit') => {
-    if (type === 'entry') {
-      setEntryConditions(entryConditions.filter(c => c.id !== id));
+  const removeAction = (id: string, type: 'true' | 'false') => {
+    if (type === 'true') {
+      setTrueActions(trueActions.filter(a => a.id !== id));
     } else {
-      setExitConditions(exitConditions.filter(c => c.id !== id));
+      setFalseActions(falseActions.filter(a => a.id !== id));
     }
   };
 
-  const addAction = () => {
-    if (actions.length < 4) {
-      const newAction: Action = {
-        id: Date.now().toString(),
-        type: "Close Position",
-        orderType: "Market",
-        symbol: "BTC"
-      };
-      setActions([...actions, newAction]);
-    }
-  };
-
-  const removeAction = (id: string) => {
-    setActions(actions.filter(a => a.id !== id));
-  };
-
-  const updateCondition = (id: string, field: string, value: string, type: 'entry' | 'exit') => {
-    const updateFn = (conditions: Condition[]) =>
-      conditions.map(c => c.id === id ? { ...c, [field]: value } : c);
+  const updateAction = (id: string, field: string, value: string, type: 'true' | 'false') => {
+    const updateFn = (actions: Action[]) =>
+      actions.map(a => a.id === id ? { ...a, [field]: value } : a);
     
-    if (type === 'entry') {
-      setEntryConditions(updateFn(entryConditions));
+    if (type === 'true') {
+      setTrueActions(updateFn(trueActions));
     } else {
-      setExitConditions(updateFn(exitConditions));
+      setFalseActions(updateFn(falseActions));
     }
-  };
-
-  const updateAction = (id: string, field: string, value: string) => {
-    setActions(actions.map(a => a.id === id ? { ...a, [field]: value } : a));
   };
 
   const renderPositionParameter = (label: string, value: string | number, isProfit?: boolean) => {
@@ -279,6 +289,87 @@ const ConditionalTrading = () => {
 
   const filteredParameters = technicalIndicators.filter(indicator =>
     indicator.toLowerCase().includes(parameterSearchTerm.toLowerCase())
+  );
+
+  const renderActionRow = (action: Action, type: 'true' | 'false') => (
+    <div key={action.id} className="flex items-center gap-2 backdrop-blur-sm bg-white/5 border border-white/10 rounded-lg p-2">
+      <Select value={action.orderType} onValueChange={(value) => updateAction(action.id, 'orderType', value, type)}>
+        <SelectTrigger className="w-32 backdrop-blur-sm bg-white/10 border border-white/20 text-white">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent className="backdrop-blur-md bg-gray-900/90 border border-white/20">
+          {orderTypes.map((orderType) => (
+            <SelectItem key={orderType} value={orderType} className="text-white hover:bg-white/10">
+              {orderType}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      
+      <Select value={action.side} onValueChange={(value) => updateAction(action.id, 'side', value, type)}>
+        <SelectTrigger className="w-20 backdrop-blur-sm bg-white/10 border border-white/20 text-white">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent className="backdrop-blur-md bg-gray-900/90 border border-white/20">
+          {orderSides.map((side) => (
+            <SelectItem key={side} value={side} className="text-white hover:bg-white/10">
+              {side}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      
+      <Select value={action.symbol} onValueChange={(value) => updateAction(action.id, 'symbol', value, type)}>
+        <SelectTrigger className="w-24 backdrop-blur-sm bg-white/10 border border-white/20 text-white">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent className="backdrop-blur-md bg-gray-900/90 border border-white/20">
+          {cryptoAssets.map((asset) => (
+            <SelectItem key={asset.symbol} value={asset.symbol} className="text-white hover:bg-white/10">
+              {asset.symbol}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      
+      <Input
+        placeholder="Quantity"
+        value={action.quantity}
+        onChange={(e) => updateAction(action.id, 'quantity', e.target.value, type)}
+        className="w-24 backdrop-blur-sm bg-white/10 border border-white/20 text-white placeholder:text-gray-400"
+      />
+      
+      {(action.orderType === 'Limit' || action.orderType === 'Stop Limit') && (
+        <Input
+          placeholder="Price"
+          value={action.price || ""}
+          onChange={(e) => updateAction(action.id, 'price', e.target.value, type)}
+          className="w-24 backdrop-blur-sm bg-white/10 border border-white/20 text-white placeholder:text-gray-400"
+        />
+      )}
+      
+      <Select value={action.timeInForce} onValueChange={(value) => updateAction(action.id, 'timeInForce', value, type)}>
+        <SelectTrigger className="w-20 backdrop-blur-sm bg-white/10 border border-white/20 text-white">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent className="backdrop-blur-md bg-gray-900/90 border border-white/20">
+          {timeInForceOptions.map((tif) => (
+            <SelectItem key={tif} value={tif} className="text-white hover:bg-white/10">
+              {tif}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => removeAction(action.id, type)}
+        className="hover:bg-red-500/20 text-red-400"
+      >
+        <X className="w-4 h-4" />
+      </Button>
+    </div>
   );
 
   return (
@@ -352,7 +443,7 @@ const ConditionalTrading = () => {
         {visiblePositions.length < Math.min(allPositions.length, 10) && (
           <Button
             onClick={showMorePositions}
-            className="backdrop-blur-md bg-white/5 hover:bg-white/10 border border-white/20 font-bold transition-all duration-300 text-white"
+            className="backdrop-blur-sm bg-gradient-to-r from-blue-500/30 to-purple-500/30 border border-blue-400/50 text-blue-200 hover:bg-gradient-to-r hover:from-blue-500/50 hover:to-purple-500/50 hover:border-blue-400/80 hover:text-blue-100 transition-all duration-300 shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40"
           >
             <Plus className="w-4 h-4 mr-2" />
             Show More Positions ({allPositions.length - visiblePositions.length} remaining)
@@ -368,51 +459,33 @@ const ConditionalTrading = () => {
             <span className="text-xl font-bold text-white -rotate-45">IF</span>
           </div>
           
-          {/* Connecting Lines */}
-          <div className="absolute top-1/2 -left-20 w-16 h-0.5 bg-gradient-to-l from-green-400 to-transparent"></div>
-          <div className="absolute top-1/2 -right-20 w-16 h-0.5 bg-gradient-to-r from-red-400 to-transparent"></div>
+          {/* Connecting Lines - TRUE goes to the right, FALSE to the left */}
+          <div className="absolute top-1/2 -right-20 w-16 h-0.5 bg-gradient-to-r from-green-400 to-transparent"></div>
+          <div className="absolute top-1/2 -left-20 w-16 h-0.5 bg-gradient-to-l from-red-400 to-transparent"></div>
           
           {/* TRUE/FALSE Labels */}
-          <div className="absolute top-1/2 -right-32 transform -translate-y-1/2 text-red-400 font-bold text-sm">FALSE</div>
-          <div className="absolute top-1/2 -left-32 transform -translate-y-1/2 text-green-400 font-bold text-sm">TRUE</div>
+          <div className="absolute top-1/2 -right-32 transform -translate-y-1/2 text-green-400 font-bold text-sm">TRUE</div>
+          <div className="absolute top-1/2 -left-32 transform -translate-y-1/2 text-red-400 font-bold text-sm">FALSE</div>
         </div>
 
-        {/* Conditions - Moved below the IF diamond */}
+        {/* Conditions - Below the IF diamond */}
         <div className="mt-8 w-full max-w-4xl">
-          {/* Entry Conditions */}
-          <div className="mb-6">
-            <div className="flex items-center justify-center gap-4 mb-4">
-              <ToggleGroup type="single" value={entryConnector} onValueChange={setEntryConnector}>
-                <ToggleGroupItem 
-                  value="and" 
-                  className="backdrop-blur-sm bg-gradient-to-r from-emerald-500/30 to-teal-500/30 border border-emerald-400/50 text-emerald-200 data-[state=on]:bg-gradient-to-r data-[state=on]:from-emerald-500/60 data-[state=on]:to-teal-500/60 data-[state=on]:border-emerald-400/80 data-[state=on]:text-emerald-100 transition-all duration-300 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:bg-gradient-to-r hover:from-emerald-500/40 hover:to-teal-500/40"
-                >
-                  AND
-                </ToggleGroupItem>
-                <ToggleGroupItem 
-                  value="or" 
-                  className="backdrop-blur-sm bg-gradient-to-r from-amber-500/30 to-orange-500/30 border border-amber-400/50 text-amber-200 data-[state=on]:bg-gradient-to-r data-[state=on]:from-amber-500/60 data-[state=on]:to-orange-500/60 data-[state=on]:border-amber-400/80 data-[state=on]:text-amber-100 transition-all duration-300 shadow-lg shadow-amber-500/20 hover:shadow-amber-500/40 hover:bg-gradient-to-r hover:from-amber-500/40 hover:to-orange-500/40"
-                >
-                  OR
-                </ToggleGroupItem>
-                <ToggleGroupItem 
-                  value="(" 
-                  className="backdrop-blur-sm bg-gradient-to-r from-gray-500/30 to-slate-500/30 border border-gray-400/50 text-gray-200 data-[state=on]:bg-gradient-to-r data-[state=on]:from-gray-500/60 data-[state=on]:to-slate-500/60 data-[state=on]:border-gray-400/80 data-[state=on]:text-gray-100 transition-all duration-300 shadow-lg shadow-gray-500/20 hover:shadow-gray-500/40 hover:bg-gradient-to-r hover:from-gray-500/40 hover:to-slate-500/40"
-                >
-                  (
-                </ToggleGroupItem>
-                <ToggleGroupItem 
-                  value=")" 
-                  className="backdrop-blur-sm bg-gradient-to-r from-gray-500/30 to-slate-500/30 border border-gray-400/50 text-gray-200 data-[state=on]:bg-gradient-to-r data-[state=on]:from-gray-500/60 data-[state=on]:to-slate-500/60 data-[state=on]:border-gray-400/80 data-[state=on]:text-gray-100 transition-all duration-300 shadow-lg shadow-gray-500/20 hover:shadow-gray-500/40 hover:bg-gradient-to-r hover:from-gray-500/40 hover:to-slate-500/40"
-                >
-                  )
-                </ToggleGroupItem>
-              </ToggleGroup>
-            </div>
-            
-            <div className="space-y-2">
-              {entryConditions.map((condition, index) => (
-                <div key={condition.id} className="flex items-center gap-2 backdrop-blur-sm bg-white/5 border border-white/10 rounded-lg p-2 justify-center">
+          <div className="space-y-4">
+            {entryConditions.map((condition, index) => (
+              <div key={condition.id} className="space-y-2">
+                <div className="flex items-center gap-2 backdrop-blur-sm bg-white/5 border border-white/10 rounded-lg p-2 justify-center group">
+                  {/* Open Parenthesis */}
+                  <button
+                    onClick={() => toggleParenthesis(condition.id, 'open')}
+                    className={`w-8 h-8 rounded border transition-all duration-200 ${
+                      condition.hasOpenParen 
+                        ? 'bg-gradient-to-r from-blue-500/50 to-purple-500/50 border-blue-400/80 text-blue-100' 
+                        : 'bg-white/5 border-white/20 text-gray-400 opacity-0 group-hover:opacity-100'
+                    }`}
+                  >
+                    (
+                  </button>
+                  
                   {/* Asset/Parameter Selector with Search Modal */}
                   <Dialog open={assetSearchOpen} onOpenChange={setAssetSearchOpen}>
                     <DialogTrigger asChild>
@@ -439,7 +512,7 @@ const ConditionalTrading = () => {
                             <button
                               key={asset.symbol}
                               onClick={() => {
-                                updateCondition(condition.id, 'type', asset.symbol, 'entry');
+                                updateCondition(condition.id, 'type', asset.symbol);
                                 setAssetSearchOpen(false);
                                 setAssetSearchTerm("");
                               }}
@@ -453,7 +526,7 @@ const ConditionalTrading = () => {
                             <button
                               key={param}
                               onClick={() => {
-                                updateCondition(condition.id, 'type', param, 'entry');
+                                updateCondition(condition.id, 'type', param);
                                 setAssetSearchOpen(false);
                                 setAssetSearchTerm("");
                               }}
@@ -467,7 +540,7 @@ const ConditionalTrading = () => {
                     </DialogContent>
                   </Dialog>
                   
-                  <Select value={condition.operator} onValueChange={(value) => updateCondition(condition.id, 'operator', value, 'entry')}>
+                  <Select value={condition.operator} onValueChange={(value) => updateCondition(condition.id, 'operator', value)}>
                     <SelectTrigger className="w-16 backdrop-blur-sm bg-white/10 border border-white/20 text-white">
                       <SelectValue />
                     </SelectTrigger>
@@ -488,253 +561,111 @@ const ConditionalTrading = () => {
                   <Input
                     placeholder="Value"
                     value={condition.value}
-                    onChange={(e) => updateCondition(condition.id, 'value', e.target.value, 'entry')}
+                    onChange={(e) => updateCondition(condition.id, 'value', e.target.value)}
                     className="backdrop-blur-sm bg-white/10 border border-white/20 text-white placeholder:text-gray-400 w-40"
                   />
                   
-                  {index < entryConditions.length - 1 && (
-                    <span className="text-gray-400 text-sm font-medium">
-                      {entryConnector.toUpperCase()}
-                    </span>
-                  )}
+                  {/* Close Parenthesis */}
+                  <button
+                    onClick={() => toggleParenthesis(condition.id, 'close')}
+                    className={`w-8 h-8 rounded border transition-all duration-200 ${
+                      condition.hasCloseParen 
+                        ? 'bg-gradient-to-r from-blue-500/50 to-purple-500/50 border-blue-400/80 text-blue-100' 
+                        : 'bg-white/5 border-white/20 text-gray-400 opacity-0 group-hover:opacity-100'
+                    }`}
+                  >
+                    )
+                  </button>
                   
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => removeCondition(condition.id, 'entry')}
+                    onClick={() => removeCondition(condition.id)}
                     className="hover:bg-red-500/20 text-red-400"
                   >
                     <X className="w-4 h-4" />
                   </Button>
                 </div>
-              ))}
-            </div>
-          </div>
 
+                {/* Connectors below each condition (except the last one) */}
+                {index < entryConditions.length - 1 && (
+                  <div className="flex justify-center gap-4">
+                    <ToggleGroup type="single" value={condition.connector} onValueChange={(value) => value && updateCondition(condition.id, 'connector', value)}>
+                      <ToggleGroupItem 
+                        value="and" 
+                        className="backdrop-blur-sm bg-gradient-to-r from-emerald-500/30 to-teal-500/30 border border-emerald-400/50 text-emerald-200 data-[state=on]:bg-gradient-to-r data-[state=on]:from-emerald-500/60 data-[state=on]:to-teal-500/60 data-[state=on]:border-emerald-400/80 data-[state=on]:text-emerald-100"
+                      >
+                        AND
+                      </ToggleGroupItem>
+                      <ToggleGroupItem 
+                        value="or" 
+                        className="backdrop-blur-sm bg-gradient-to-r from-amber-500/30 to-orange-500/30 border border-amber-400/50 text-amber-200 data-[state=on]:bg-gradient-to-r data-[state=on]:from-amber-500/60 data-[state=on]:to-orange-500/60 data-[state=on]:border-amber-400/80 data-[state=on]:text-amber-100"
+                      >
+                        OR
+                      </ToggleGroupItem>
+                    </ToggleGroup>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+          
           {/* Add Condition Button */}
-          <div className="flex justify-center">
+          {entryConditions.length > 0 && entryConditions[entryConditions.length - 1].connector && (
+            <div className="flex justify-center mt-4">
+              <Button
+                onClick={() => addCondition(entryConditions.length - 1, "")}
+                disabled={entryConditions.length >= 8}
+                className="backdrop-blur-sm bg-gradient-to-r from-blue-500/30 to-purple-500/30 border border-blue-400/50 text-blue-200 hover:bg-gradient-to-r hover:from-blue-500/50 hover:to-purple-500/50 hover:border-blue-400/80 hover:text-blue-100 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Condition {entryConditions.length + 1}
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Action Sections - Side by Side */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        {/* TRUE Actions */}
+        <div>
+          <h4 className="text-xl font-bold mb-4 bg-gradient-to-r from-green-400 via-emerald-500 to-teal-400 bg-clip-text text-transparent drop-shadow-lg">
+            TRUE - Actions to Execute
+          </h4>
+          
+          <div className="space-y-2">
+            {trueActions.map((action) => renderActionRow(action, 'true'))}
+            
             <Button
-              variant="ghost"
-              onClick={() => addCondition('entry')}
-              disabled={entryConditions.length >= 8}
-              className="backdrop-blur-sm bg-gradient-to-r from-blue-500/30 to-purple-500/30 border border-blue-400/50 text-blue-200 hover:bg-gradient-to-r hover:from-blue-500/50 hover:to-purple-500/50 hover:border-blue-400/80 hover:text-blue-100 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40"
+              onClick={() => addAction('true')}
+              disabled={trueActions.length >= 4}
+              className="backdrop-blur-sm bg-gradient-to-r from-green-500/30 to-emerald-500/30 border border-green-400/50 text-green-200 hover:bg-gradient-to-r hover:from-green-500/50 hover:to-emerald-500/50 hover:border-green-400/80 hover:text-green-100 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-green-500/20 hover:shadow-green-500/40"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Condition {entryConditions.length + 1}
+              Add Action
             </Button>
           </div>
         </div>
-      </div>
 
-      {/* Exit Conditions */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <h4 className="text-xl font-bold bg-gradient-to-r from-pink-400 via-red-500 to-orange-400 bg-clip-text text-transparent drop-shadow-lg">
-            Else
+        {/* FALSE Actions */}
+        <div>
+          <h4 className="text-xl font-bold mb-4 bg-gradient-to-r from-red-400 via-rose-500 to-pink-400 bg-clip-text text-transparent drop-shadow-lg">
+            FALSE - Actions to Execute
           </h4>
-          <ToggleGroup type="single" value={exitConnector} onValueChange={setExitConnector}>
-            <ToggleGroupItem 
-              value="and" 
-              className="backdrop-blur-sm bg-gradient-to-r from-emerald-500/30 to-teal-500/30 border border-emerald-400/50 text-emerald-200 data-[state=on]:bg-gradient-to-r data-[state=on]:from-emerald-500/60 data-[state=on]:to-teal-500/60 data-[state=on]:border-emerald-400/80 data-[state=on]:text-emerald-100 transition-all duration-300 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:bg-gradient-to-r hover:from-emerald-500/40 hover:to-teal-500/40"
-            >
-              AND
-            </ToggleGroupItem>
-            <ToggleGroupItem 
-              value="or" 
-              className="backdrop-blur-sm bg-gradient-to-r from-amber-500/30 to-orange-500/30 border border-amber-400/50 text-amber-200 data-[state=on]:bg-gradient-to-r data-[state=on]:from-amber-500/60 data-[state=on]:to-orange-500/60 data-[state=on]:border-amber-400/80 data-[state=on]:text-amber-100 transition-all duration-300 shadow-lg shadow-amber-500/20 hover:shadow-amber-500/40 hover:bg-gradient-to-r hover:from-amber-500/40 hover:to-orange-500/40"
-            >
-              OR
-            </ToggleGroupItem>
-            <ToggleGroupItem 
-              value="(" 
-              className="backdrop-blur-sm bg-gradient-to-r from-gray-500/30 to-slate-500/30 border border-gray-400/50 text-gray-200 data-[state=on]:bg-gradient-to-r data-[state=on]:from-gray-500/60 data-[state=on]:to-slate-500/60 data-[state=on]:border-gray-400/80 data-[state=on]:text-gray-100 transition-all duration-300 shadow-lg shadow-gray-500/20 hover:shadow-gray-500/40 hover:bg-gradient-to-r hover:from-gray-500/40 hover:to-slate-500/40"
-            >
-              (
-            </ToggleGroupItem>
-            <ToggleGroupItem 
-              value=")" 
-              className="backdrop-blur-sm bg-gradient-to-r from-gray-500/30 to-slate-500/30 border border-gray-400/50 text-gray-200 data-[state=on]:bg-gradient-to-r data-[state=on]:from-gray-500/60 data-[state=on]:to-slate-500/60 data-[state=on]:border-gray-400/80 data-[state=on]:text-gray-100 transition-all duration-300 shadow-lg shadow-gray-500/20 hover:shadow-gray-500/40 hover:bg-gradient-to-r hover:from-gray-500/40 hover:to-slate-500/40"
-            >
-              )
-            </ToggleGroupItem>
-          </ToggleGroup>
-        </div>
-        
-        <div className="space-y-2">
-          {exitConditions.map((condition, index) => (
-            <div key={condition.id} className="flex items-center gap-2 backdrop-blur-sm bg-white/5 border border-white/10 rounded-lg p-2">
-              <Dialog open={parameterSearchOpen} onOpenChange={setParameterSearchOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" className="backdrop-blur-sm bg-white/10 border border-white/20 text-white hover:bg-white/20 min-w-[120px] justify-start">
-                    {condition.type || "Select Parameter"}
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="backdrop-blur-md bg-gray-900/90 border border-white/20">
-                  <DialogHeader>
-                    <DialogTitle className="text-white">Select Parameter or Asset</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                      <Input
-                        placeholder="Search parameters or assets..."
-                        value={parameterSearchTerm}
-                        onChange={(e) => setParameterSearchTerm(e.target.value)}
-                        className="pl-10 backdrop-blur-sm bg-white/10 border border-white/20 text-white placeholder:text-gray-400"
-                      />
-                    </div>
-                    <div className="max-h-60 overflow-y-auto space-y-1">
-                      {filteredParameters.map((param) => (
-                        <button
-                          key={param}
-                          onClick={() => {
-                            updateCondition(condition.id, 'type', param, 'exit');
-                            setParameterSearchOpen(false);
-                            setParameterSearchTerm("");
-                          }}
-                          className="w-full text-left p-2 rounded hover:bg-white/10 text-white"
-                        >
-                          {param}
-                        </button>
-                      ))}
-                      {filteredCryptoAssets.map((asset) => (
-                        <button
-                          key={asset.symbol}
-                          onClick={() => {
-                            updateCondition(condition.id, 'type', asset.symbol, 'exit');
-                            setParameterSearchOpen(false);
-                            setParameterSearchTerm("");
-                          }}
-                          className="w-full text-left p-2 rounded hover:bg-white/10 text-white"
-                        >
-                          <div className="font-medium">{asset.symbol}</div>
-                          <div className="text-sm text-gray-400">{asset.name}</div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
-              
-              <Select value={condition.operator} onValueChange={(value) => updateCondition(condition.id, 'operator', value, 'exit')}>
-                <SelectTrigger className="w-16 backdrop-blur-sm bg-white/10 border border-white/20 text-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="backdrop-blur-md bg-gray-900/90 border border-white/20">
-                  <SelectItem value=">" className="text-white hover:bg-white/10">{">"}</SelectItem>
-                  <SelectItem value="<" className="text-white hover:bg-white/10">{"<"}</SelectItem>
-                  <SelectItem value="=" className="text-white hover:bg-white/10">{"="}</SelectItem>
-                  <SelectItem value=">=" className="text-white hover:bg-white/10">{">="}</SelectItem>
-                  <SelectItem value="<=" className="text-white hover:bg-white/10">{"<="}</SelectItem>
-                  <SelectItem value="!=" className="text-white hover:bg-white/10">{"!="}</SelectItem>
-                  <SelectItem value="+" className="text-white hover:bg-white/10">{"+"}</SelectItem>
-                  <SelectItem value="-" className="text-white hover:bg-white/10">{"-"}</SelectItem>
-                  <SelectItem value="*" className="text-white hover:bg-white/10">{"*"}</SelectItem>
-                  <SelectItem value="/" className="text-white hover:bg-white/10">{"/"}</SelectItem>
-                </SelectContent>
-              </Select>
-              
-              <Input
-                placeholder="Value"
-                value={condition.value}
-                onChange={(e) => updateCondition(condition.id, 'value', e.target.value, 'exit')}
-                className="backdrop-blur-sm bg-white/10 border border-white/20 text-white placeholder:text-gray-400 flex-1"
-              />
-              
-              {index < exitConditions.length - 1 && (
-                <span className="text-gray-400 text-sm font-medium">
-                  {exitConnector.toUpperCase()}
-                </span>
-              )}
-              
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => removeCondition(condition.id, 'exit')}
-                className="hover:bg-red-500/20 text-red-400"
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-          ))}
           
-          <Button
-            variant="ghost"
-            onClick={() => addCondition('exit')}
-            disabled={exitConditions.length >= 8}
-            className="backdrop-blur-sm bg-gradient-to-r from-pink-500/30 to-rose-500/30 border border-pink-400/50 text-pink-200 hover:bg-gradient-to-r hover:from-pink-500/50 hover:to-rose-500/50 hover:border-pink-400/80 hover:text-pink-100 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-pink-500/20 hover:shadow-pink-500/40"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Condition {exitConditions.length + 1}
-          </Button>
-        </div>
-      </div>
-
-      {/* Actions */}
-      <div className="mb-6">
-        <h4 className="text-xl font-bold mb-4 bg-gradient-to-r from-purple-400 via-indigo-500 to-cyan-400 bg-clip-text text-transparent drop-shadow-lg">
-          Actions to Execute
-        </h4>
-        
-        <div className="space-y-2">
-          {actions.map((action) => (
-            <div key={action.id} className="flex items-center gap-2 backdrop-blur-sm bg-white/5 border border-white/10 rounded-lg p-2">
-              <Select value={action.type} onValueChange={(value) => updateAction(action.id, 'type', value)}>
-                <SelectTrigger className="backdrop-blur-sm bg-white/10 border border-white/20 text-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="backdrop-blur-md bg-gray-900/90 border border-white/20">
-                  {actionTypes.map((type) => (
-                    <SelectItem key={type} value={type} className="text-white hover:bg-white/10">
-                      {type}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              
-              <Select value={action.symbol || ""} onValueChange={(value) => updateAction(action.id, 'symbol', value)}>
-                <SelectTrigger className="backdrop-blur-sm bg-white/10 border border-white/20 text-white">
-                  <SelectValue placeholder="Symbol" />
-                </SelectTrigger>
-                <SelectContent className="backdrop-blur-md bg-gray-900/90 border border-white/20">
-                  <SelectItem value="BTC" className="text-white hover:bg-white/10">BTC</SelectItem>
-                  <SelectItem value="ETH" className="text-white hover:bg-white/10">ETH</SelectItem>
-                  <SelectItem value="SOL" className="text-white hover:bg-white/10">SOL</SelectItem>
-                  <SelectItem value="ADA" className="text-white hover:bg-white/10">ADA</SelectItem>
-                </SelectContent>
-              </Select>
-              
-              <Select value={action.orderType} onValueChange={(value) => updateAction(action.id, 'orderType', value)}>
-                <SelectTrigger className="backdrop-blur-sm bg-white/10 border border-white/20 text-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="backdrop-blur-md bg-gray-900/90 border border-white/20">
-                  <SelectItem value="Market" className="text-white hover:bg-white/10">Market</SelectItem>
-                  <SelectItem value="Limit" className="text-white hover:bg-white/10">Limit</SelectItem>
-                  <SelectItem value="Stop" className="text-white hover:bg-white/10">Stop</SelectItem>
-                </SelectContent>
-              </Select>
-              
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => removeAction(action.id)}
-                className="hover:bg-red-500/20 text-red-400"
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-          ))}
-          
-          <Button
-            variant="ghost"
-            onClick={addAction}
-            disabled={actions.length >= 4}
-            className="backdrop-blur-sm bg-gradient-to-r from-indigo-500/30 to-cyan-500/30 border border-indigo-400/50 text-indigo-200 hover:bg-gradient-to-r hover:from-indigo-500/50 hover:to-cyan-500/50 hover:border-indigo-400/80 hover:text-indigo-100 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Action
-          </Button>
+          <div className="space-y-2">
+            {falseActions.map((action) => renderActionRow(action, 'false'))}
+            
+            <Button
+              onClick={() => addAction('false')}
+              disabled={falseActions.length >= 4}
+              className="backdrop-blur-sm bg-gradient-to-r from-red-500/30 to-rose-500/30 border border-red-400/50 text-red-200 hover:bg-gradient-to-r hover:from-red-500/50 hover:to-rose-500/50 hover:border-red-400/80 hover:text-red-100 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-red-500/20 hover:shadow-red-500/40"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Action
+            </Button>
+          </div>
         </div>
       </div>
 
