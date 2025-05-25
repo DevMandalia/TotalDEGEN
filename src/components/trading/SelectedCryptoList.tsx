@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { ArrowUpRight, ArrowDownRight, Plus, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -60,19 +59,11 @@ const SelectedCryptoList = () => {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-6 relative">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
           Selected Cryptocurrencies
         </h3>
-        <Button 
-          onClick={() => setIsModalOpen(true)}
-          className="bg-gradient-to-r from-green-600/80 to-emerald-600/80 hover:from-green-700/80 hover:to-emerald-700/80 font-bold backdrop-blur-md border border-white/20 transition-all duration-300 shadow-lg"
-          size="sm"
-        >
-          <Plus className="w-4 h-4 mr-1" />
-          Add +
-        </Button>
       </div>
 
       {/* Header Row */}
@@ -85,7 +76,7 @@ const SelectedCryptoList = () => {
         <div className="text-sm font-medium text-gray-400 text-right">Actions</div>
       </div>
       
-      <div className="grid grid-cols-1 gap-2">
+      <div className="grid grid-cols-1 gap-2 mb-4">
         {cryptos.map((crypto) => (
           <div key={crypto.symbol} className="grid grid-cols-6 gap-4 p-3 hover:bg-white/5 rounded-lg transition-all duration-300 backdrop-blur-sm border border-white/10">
             <div className="flex items-center gap-3">
@@ -131,6 +122,18 @@ const SelectedCryptoList = () => {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Add Button - Bottom Left */}
+      <div className="flex justify-start">
+        <Button 
+          onClick={() => setIsModalOpen(true)}
+          className="bg-gradient-to-r from-green-600/80 to-emerald-600/80 hover:from-green-700/80 hover:to-emerald-700/80 font-bold backdrop-blur-md border border-white/20 transition-all duration-300 shadow-lg"
+          size="sm"
+        >
+          <Plus className="w-4 h-4 mr-1" />
+          Add +
+        </Button>
       </div>
 
       {/* Add Crypto Modal */}
