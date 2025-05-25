@@ -1,10 +1,12 @@
+
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Plus, X, Trash2 } from "lucide-react";
+import { Plus, X, Trash2, Settings, Eye, EyeOff } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface Condition {
   id: string;
@@ -22,11 +24,42 @@ interface Action {
   quantity?: string;
 }
 
+interface Position {
+  id: string;
+  assetName: string;
+  leverage: string;
+  entryPrice: number;
+  notionalSize: number;
+  breakevenPrice: number;
+  marginAmount: number;
+  marginType: string;
+  realTimePnL: number;
+  pnLPercent: number;
+  liquidationPrice: number;
+  side: string;
+  currentPrice: number;
+  unrealizedPnL: number;
+}
+
+interface VisibleParameters {
+  assetName: boolean;
+  leverage: boolean;
+  entryPrice: boolean;
+  notionalSize: boolean;
+  breakevenPrice: boolean;
+  marginAmount: boolean;
+  marginType: boolean;
+  realTimePnL: boolean;
+  pnLPercent: boolean;
+  liquidationPrice: boolean;
+  side: boolean;
+  currentPrice: boolean;
+  unrealizedPnL: boolean;
+}
+
 const ConditionalTrading = () => {
   const [timeframe, setTimeframe] = useState("1min");
   const [position, setPosition] = useState("Buy");
-  const [quantity, setQuantity] = useState("");
-  const [instrument, setInstrument] = useState("");
   
   const [entryConditions, setEntryConditions] = useState<Condition[]>([
     { id: "1", type: "Open", operator: "10", value: "" }
@@ -41,6 +74,89 @@ const ConditionalTrading = () => {
   const [actions, setActions] = useState<Action[]>([
     { id: "1", type: "Close Position", orderType: "Market", symbol: "BTC" }
   ]);
+
+  // Mock positions data - sorted by notional size
+  const [allPositions] = useState<Position[]>([
+    {
+      id: "1",
+      assetName: "BTC",
+      leverage: "10x",
+      entryPrice: 94500.00,
+      notionalSize: 23400.00,
+      breakevenPrice: 94650.00,
+      marginAmount: 2340.00,
+      marginType: "Cross",
+      realTimePnL: 782.45,
+      pnLPercent: 33.42,
+      liquidationPrice: 85050.00,
+      side: "LONG",
+      currentPrice: 97842.91,
+      unrealizedPnL: 782.45
+    },
+    {
+      id: "2",
+      assetName: "ETH",
+      leverage: "5x",
+      entryPrice: 3420.50,
+      notionalSize: 17102.50,
+      breakevenPrice: 3425.80,
+      marginAmount: 3420.50,
+      marginType: "Isolated",
+      realTimePnL: -156.23,
+      pnLPercent: -4.57,
+      liquidationPrice: 2736.40,
+      side: "LONG",
+      currentPrice: 3389.25,
+      unrealizedPnL: -156.23
+    },
+    {
+      id: "3",
+      assetName: "SOL",
+      leverage: "15x",
+      entryPrice: 185.40,
+      notionalSize: 9270.00,
+      breakevenPrice: 186.10,
+      marginAmount: 618.00,
+      marginType: "Cross",
+      realTimePnL: 312.50,
+      pnLPercent: 50.57,
+      liquidationPrice: 173.20,
+      side: "LONG",
+      currentPrice: 191.65,
+      unrealizedPnL: 312.50
+    }
+  ]);
+
+  const [visiblePositions, setVisiblePositions] = useState<Position[]>([allPositions[0]]);
+  const [visibleParams, setVisibleParams] = useState<VisibleParameters>({
+    assetName: true,
+    leverage: true,
+    entryPrice: true,
+    notionalSize: true,
+    breakevenPrice: true,
+    marginAmount: true,
+    marginType: true,
+    realTimePnL: true,
+    pnLPercent: true,
+    liquidationPrice: true,
+    side: true,
+    currentPrice: false,
+    unrealizedPnL: false
+  });
+
+  const showMorePositions = () => {
+    if (visiblePositions.length < Math.min(allPositions.length, 10)) {
+      setVisiblePositions([...visiblePositions, allPositions[visiblePositions.length]]);
+    }
+  };
+
+  const removePosition = (positionId: string) => {
+    setVisiblePositions(visiblePositions.filter(p => p.id !== positionId));
+  };
+
+  const toggleParameter = (param: keyof VisibleParameters) => {
+    setVisibleParams(prev => ({ ...prev, [param]: !prev[param] }));
+  };
 
   const conditionTypes = [
     "Open", "Close", "High", "Low", "Volume",
@@ -111,32 +227,117 @@ const ConditionalTrading = () => {
     setActions(actions.map(a => a.id === id ? { ...a, [field]: value } : a));
   };
 
+  const renderPositionParameter = (label: string, value: string | number, isProfit?: boolean) => {
+    if (typeof value === 'number') {
+      return (
+        <div className="min-w-0 flex-1">
+          <div className="text-gray-400 text-xs font-medium mb-1 truncate">{label}</div>
+          <div className={`font-bold text-sm truncate ${
+            isProfit !== undefined 
+              ? isProfit ? 'text-green-400' : 'text-red-400'
+              : 'text-white'
+          }`}>
+            {label.includes('Price') || label.includes('PnL') || label.includes('Margin') 
+              ? `$${value.toLocaleString()}` 
+              : label.includes('%') 
+              ? `${value.toFixed(2)}%`
+              : value.toLocaleString()}
+          </div>
+        </div>
+      );
+    }
+    
+    return (
+      <div className="min-w-0 flex-1">
+        <div className="text-gray-400 text-xs font-medium mb-1 truncate">{label}</div>
+        <div className="text-white font-bold text-sm truncate">{value}</div>
+      </div>
+    );
+  };
+
   return (
     <Card className="backdrop-blur-md bg-white/5 border border-white/20 p-6 shadow-2xl">
-      <h3 className="text-lg font-bold text-white mb-6 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-        Conditional Trading Strategy
-      </h3>
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-lg font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+          Conditional Ordering
+        </h3>
+        
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button className="backdrop-blur-md bg-white/5 hover:bg-white/10 border border-white/20 font-bold transition-all duration-300 text-white">
+              <Settings className="w-4 h-4 mr-2" />
+              Parameters
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="backdrop-blur-md bg-gray-900/90 border border-white/20 p-4">
+            <div className="space-y-2">
+              <h4 className="font-medium text-white mb-3">Visible Parameters</h4>
+              {Object.entries(visibleParams).map(([key, value]) => (
+                <div key={key} className="flex items-center space-x-2">
+                  <button
+                    onClick={() => toggleParameter(key as keyof VisibleParameters)}
+                    className="text-white hover:text-blue-400"
+                  >
+                    {value ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                  </button>
+                  <span className="text-sm text-gray-300 capitalize">
+                    {key.replace(/([A-Z])/g, ' $1').trim()}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </PopoverContent>
+        </Popover>
+      </div>
 
-      {/* Strategy Setup */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div className="space-y-2">
-          <label className="text-gray-400 text-sm">Search Instrument</label>
-          <Input
-            placeholder="Enter Here"
-            value={instrument}
-            onChange={(e) => setInstrument(e.target.value)}
-            className="backdrop-blur-sm bg-white/10 border border-white/20 text-white placeholder:text-gray-400"
-          />
-        </div>
-        <div className="space-y-2">
-          <label className="text-gray-400 text-sm">Quantity</label>
-          <Input
-            placeholder="Enter Here"
-            value={quantity}
-            onChange={(e) => setQuantity(e.target.value)}
-            className="backdrop-blur-sm bg-white/10 border border-white/20 text-white placeholder:text-gray-400"
-          />
-        </div>
+      {/* Position Parameters */}
+      <div className="space-y-4 mb-6">
+        {visiblePositions.map((pos, index) => (
+          <div key={pos.id} className="backdrop-blur-sm bg-white/5 border border-white/10 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-white font-bold">Position {index + 1}</h4>
+              {visiblePositions.length > 1 && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => removePosition(pos.id)}
+                  className="hover:bg-red-500/20 text-red-400"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              )}
+            </div>
+            <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
+              {visibleParams.assetName && renderPositionParameter("Asset", pos.assetName)}
+              {visibleParams.side && renderPositionParameter("Side", pos.side)}
+              {visibleParams.leverage && renderPositionParameter("Leverage", pos.leverage)}
+              {visibleParams.entryPrice && renderPositionParameter("Entry Price", pos.entryPrice)}
+              {visibleParams.currentPrice && renderPositionParameter("Current Price", pos.currentPrice)}
+              {visibleParams.notionalSize && renderPositionParameter("Notional Size", pos.notionalSize)}
+              {visibleParams.breakevenPrice && renderPositionParameter("Breakeven", pos.breakevenPrice)}
+              {visibleParams.marginAmount && renderPositionParameter("Margin", pos.marginAmount)}
+              {visibleParams.marginType && renderPositionParameter("Margin Type", pos.marginType)}
+              {visibleParams.realTimePnL && renderPositionParameter("Real-time PnL", pos.realTimePnL, pos.realTimePnL > 0)}
+              {visibleParams.pnLPercent && renderPositionParameter("PnL %", pos.pnLPercent, pos.pnLPercent > 0)}
+              {visibleParams.liquidationPrice && renderPositionParameter("Liquidation", pos.liquidationPrice)}
+              {visibleParams.unrealizedPnL && renderPositionParameter("Unrealized PnL", pos.unrealizedPnL, pos.unrealizedPnL > 0)}
+            </div>
+          </div>
+        ))}
+        
+        {visiblePositions.length < Math.min(allPositions.length, 10) && (
+          <Button
+            onClick={showMorePositions}
+            className="backdrop-blur-md bg-white/5 hover:bg-white/10 border border-white/20 font-bold transition-all duration-300 text-white"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Show More Positions ({allPositions.length - visiblePositions.length} remaining)
+          </Button>
+        )}
+      </div>
+
+      {/* Candle Intervals and Position */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div className="space-y-2">
           <label className="text-gray-400 text-sm">Candle Intervals</label>
           <ToggleGroup type="single" value={timeframe} onValueChange={setTimeframe} className="justify-start">
@@ -418,13 +619,13 @@ const ConditionalTrading = () => {
 
       {/* Action Buttons */}
       <div className="flex gap-3 justify-end">
-        <Button className="bg-gradient-to-r from-orange-600/80 to-orange-700/80 hover:from-orange-700/80 hover:to-orange-800/80 backdrop-blur-md border border-white/20">
+        <Button className="backdrop-blur-md bg-gradient-to-r from-orange-600/80 to-orange-700/80 hover:from-orange-700/80 hover:to-orange-800/80 border border-white/20">
           Place Strategy
         </Button>
-        <Button className="bg-gradient-to-r from-purple-600/80 to-purple-700/80 hover:from-purple-700/80 hover:to-purple-800/80 backdrop-blur-md border border-white/20">
+        <Button className="backdrop-blur-md bg-gradient-to-r from-purple-600/80 to-purple-700/80 hover:from-purple-700/80 hover:to-purple-800/80 border border-white/20">
           Save Strategy
         </Button>
-        <Button className="bg-gradient-to-r from-green-600/80 to-green-700/80 hover:from-green-700/80 hover:to-green-800/80 backdrop-blur-md border border-white/20">
+        <Button className="backdrop-blur-md bg-gradient-to-r from-green-600/80 to-green-700/80 hover:from-green-700/80 hover:to-green-800/80 border border-white/20">
           Set Alerts
         </Button>
       </div>
