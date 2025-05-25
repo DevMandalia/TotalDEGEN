@@ -48,7 +48,7 @@ const TradingNavigation = ({ onAccountClick, onSettingsClick }: TradingNavigatio
               <Zap className="w-4 h-4 text-black" />
             </Button>
             <div className="flex items-center gap-3">
-              <span className="font-semibold text-lg">TotalDEGEN</span>
+              <span className="font-semibold text-lg cursor-pointer" onClick={() => navigate('/trading')}>TotalDEGEN</span>
               <span className={`text-xs font-medium ${getStatusColor(connectionStatus)}`}>
                 {connectionStatus}
               </span>
@@ -63,7 +63,7 @@ const TradingNavigation = ({ onAccountClick, onSettingsClick }: TradingNavigatio
                 <button
                   key={item.name}
                   onClick={() => navigate(item.path)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm transition-colors ${
+                  className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm transition-colors cursor-pointer ${
                     isActive 
                       ? "bg-green-600 text-white" 
                       : "text-gray-400 hover:text-white hover:bg-gray-800"
@@ -93,7 +93,7 @@ const TradingNavigation = ({ onAccountClick, onSettingsClick }: TradingNavigatio
           <Button 
             variant="ghost" 
             size="icon" 
-            className="hover:bg-gray-800 text-gray-400"
+            className="hover:bg-gray-800 text-gray-400 cursor-pointer"
             onClick={onSettingsClick}
           >
             <Settings className="w-5 h-5" />
