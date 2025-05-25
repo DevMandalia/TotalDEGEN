@@ -62,12 +62,12 @@ const Position = () => {
             variant="ghost" 
             size="icon"
             onClick={() => navigate('/trading')}
-            className="hover:bg-gray-800 border border-gray-700"
+            className="hover:bg-white/10 border border-white/20 backdrop-blur-md bg-white/5 transition-all duration-300"
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+            <div className="w-12 h-12 bg-gradient-to-r from-blue-500/80 to-purple-600/80 rounded-full flex items-center justify-center backdrop-blur-md border border-white/20">
               <span className="text-sm font-bold text-white">{position.symbol}</span>
             </div>
             <div>
@@ -75,8 +75,8 @@ const Position = () => {
                 {position.name} Position
               </h1>
               <div className="flex items-center gap-2">
-                <span className={`text-sm font-medium px-2 py-1 rounded ${
-                  position.side === 'LONG' ? 'bg-green-600/20 text-green-400' : 'bg-red-600/20 text-red-400'
+                <span className={`text-sm font-medium px-2 py-1 rounded backdrop-blur-md border border-white/20 ${
+                  position.side === 'LONG' ? 'bg-green-600/30 text-green-400' : 'bg-red-600/30 text-red-400'
                 }`}>
                   {position.side}
                 </span>
@@ -86,8 +86,8 @@ const Position = () => {
           </div>
         </div>
 
-        {/* Full Width Chart Section */}
-        <Card className="bg-gray-900 border border-gray-800 p-6 mb-6">
+        {/* Full Width Chart Section with Glassmorphism */}
+        <Card className="backdrop-blur-md bg-white/5 border border-white/20 p-6 mb-6 shadow-2xl">
           <div className="flex justify-between items-center mb-6">
             <div>
               <div className="text-3xl font-bold mb-2 bg-gradient-to-r from-blue-400 via-purple-500 to-green-400 bg-clip-text text-transparent">
@@ -105,7 +105,7 @@ const Position = () => {
               </div>
             </div>
             <Button 
-              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 font-bold"
+              className="bg-gradient-to-r from-purple-600/80 to-pink-600/80 hover:from-purple-700/80 hover:to-pink-700/80 font-bold backdrop-blur-md border border-white/20 transition-all duration-300"
               onClick={() => {/* Handle hedging ideas */}}
             >
               💡 Hedging Ideas
@@ -120,21 +120,21 @@ const Position = () => {
           />
         </Card>
 
-        {/* Position Details Grid */}
+        {/* Position Details Grid with Glassmorphism */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <Card className="bg-gray-900 border border-gray-800 p-4">
+          <Card className="backdrop-blur-md bg-white/5 border border-white/20 p-4 shadow-lg">
             <div className="text-gray-400 text-xs font-medium mb-1">Size</div>
             <div className="text-white font-bold text-lg">{position.size} {position.symbol}</div>
           </Card>
-          <Card className="bg-gray-900 border border-gray-800 p-4">
+          <Card className="backdrop-blur-md bg-white/5 border border-white/20 p-4 shadow-lg">
             <div className="text-gray-400 text-xs font-medium mb-1">Entry Price</div>
             <div className="text-blue-400 font-bold text-lg">${position.entryPrice.toLocaleString()}</div>
           </Card>
-          <Card className="bg-gray-900 border border-gray-800 p-4">
+          <Card className="backdrop-blur-md bg-white/5 border border-white/20 p-4 shadow-lg">
             <div className="text-gray-400 text-xs font-medium mb-1">Margin Used</div>
             <div className="text-yellow-400 font-bold text-lg">${position.marginUsed.toFixed(2)}</div>
           </Card>
-          <Card className="bg-gray-900 border border-gray-800 p-4">
+          <Card className="backdrop-blur-md bg-white/5 border border-white/20 p-4 shadow-lg">
             <div className="text-gray-400 text-xs font-medium mb-1">Unrealized PnL</div>
             <div className={`font-bold text-lg ${position.isProfit ? 'text-green-400' : 'text-red-400'}`}>
               ${position.unrealizedPnl.toFixed(2)}
@@ -143,28 +143,28 @@ const Position = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Risk Management */}
+          {/* Risk Management with Glassmorphism */}
           <div className="lg:col-span-2">
-            <Card className="bg-gray-900 border border-gray-800 p-6">
+            <Card className="backdrop-blur-md bg-white/5 border border-white/20 p-6 shadow-2xl">
               <h3 className="text-lg font-bold text-white mb-4 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
                 Risk Management
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
+                <div className="backdrop-blur-sm bg-white/5 border border-white/10 rounded-lg p-3">
                   <div className="text-gray-400 text-xs font-medium mb-1">Stop Loss</div>
                   <div className="text-red-400 font-bold text-lg">${position.stopLoss.toLocaleString()}</div>
                   <div className="text-gray-500 text-xs">
                     -{((position.entryPrice - position.stopLoss) / position.entryPrice * 100).toFixed(1)}%
                   </div>
                 </div>
-                <div>
+                <div className="backdrop-blur-sm bg-white/5 border border-white/10 rounded-lg p-3">
                   <div className="text-gray-400 text-xs font-medium mb-1">Take Profit</div>
                   <div className="text-green-400 font-bold text-lg">${position.takeProfit.toLocaleString()}</div>
                   <div className="text-gray-500 text-xs">
                     +{((position.takeProfit - position.entryPrice) / position.entryPrice * 100).toFixed(1)}%
                   </div>
                 </div>
-                <div>
+                <div className="backdrop-blur-sm bg-white/5 border border-white/10 rounded-lg p-3">
                   <div className="text-gray-400 text-xs font-medium mb-1">Liquidation</div>
                   <div className="text-red-500 font-bold text-lg">${position.liquidation.toLocaleString()}</div>
                   <div className="text-gray-500 text-xs">
@@ -175,28 +175,28 @@ const Position = () => {
             </Card>
           </div>
 
-          {/* Quick Stats */}
-          <Card className="bg-gray-900 border border-gray-800 p-6">
+          {/* Quick Stats with Glassmorphism */}
+          <Card className="backdrop-blur-md bg-white/5 border border-white/20 p-6 shadow-2xl">
             <h3 className="text-lg font-bold text-white mb-4 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
               Quick Stats
             </h3>
             <div className="space-y-3">
-              <div className="flex justify-between">
+              <div className="flex justify-between p-2 rounded backdrop-blur-sm bg-white/5 border border-white/10">
                 <span className="text-gray-400 text-sm">Breakeven</span>
                 <span className="text-yellow-400 font-medium">${position.breakeven.toLocaleString()}</span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex justify-between p-2 rounded backdrop-blur-sm bg-white/5 border border-white/10">
                 <span className="text-gray-400 text-sm">Trading Fees</span>
                 <span className="text-gray-300 font-medium">${position.fees.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex justify-between p-2 rounded backdrop-blur-sm bg-white/5 border border-white/10">
                 <span className="text-gray-400 text-sm">Funding Fees</span>
                 <span className={`font-medium ${position.fundingFees < 0 ? 'text-red-400' : 'text-green-400'}`}>
                   ${position.fundingFees.toFixed(2)}
                 </span>
               </div>
-              <div className="border-t border-gray-700 pt-2 mt-2">
-                <div className="flex justify-between">
+              <div className="border-t border-white/20 pt-2 mt-2">
+                <div className="flex justify-between p-2 rounded backdrop-blur-sm bg-white/10 border border-white/20">
                   <span className="text-gray-400 text-sm">Total PnL</span>
                   <span className={`font-bold ${position.isProfit ? 'text-green-400' : 'text-red-400'}`}>
                     ${(position.pnl - position.fees + position.fundingFees).toFixed(2)}
@@ -207,8 +207,8 @@ const Position = () => {
           </Card>
         </div>
 
-        {/* Order Types Panel - Now Below */}
-        <Card className="bg-gray-900 border border-gray-800 p-6 mt-6">
+        {/* Order Types Panel with Enhanced Glassmorphism */}
+        <Card className="backdrop-blur-md bg-white/5 border border-white/20 p-6 mt-6 shadow-2xl">
           <h3 className="text-lg font-bold text-white mb-4 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
             Order Types
           </h3>
@@ -218,7 +218,7 @@ const Position = () => {
               return (
                 <Button
                   key={index}
-                  className={`${order.color} text-white font-bold py-3 px-4 rounded-lg transition-all duration-200 flex items-center gap-2`}
+                  className={`${order.color} text-white font-bold py-3 px-4 rounded-lg transition-all duration-200 flex items-center gap-2 backdrop-blur-md border border-white/20 hover:border-white/30 shadow-lg`}
                   onClick={() => {/* Handle order type */}}
                 >
                   <IconComponent className="w-4 h-4" />
