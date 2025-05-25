@@ -2,6 +2,7 @@
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import { CardSpotlight } from "./CardSpotlight";
 import { DynamicPrice } from "./DynamicPrice";
 
@@ -11,12 +12,14 @@ const PricingTier = ({
   description,
   features,
   isPopular,
+  onGambleClick,
 }: {
   name: string;
   basePrice: number;
   description: string;
   features: string[];
   isPopular?: boolean;
+  onGambleClick: () => void;
 }) => (
   <CardSpotlight className={`h-full ${isPopular ? "border-primary" : "border-white/10"} border-2`}>
     <div className="relative h-full p-6 flex flex-col">
@@ -39,7 +42,7 @@ const PricingTier = ({
           </li>
         ))}
       </ul>
-      <Button className="button-gradient w-full">
+      <Button className="button-gradient w-full" onClick={onGambleClick}>
         Let's Gamble
       </Button>
     </div>
@@ -47,6 +50,12 @@ const PricingTier = ({
 );
 
 export const PricingSection = () => {
+  const navigate = useNavigate();
+
+  const handleGambleClick = () => {
+    navigate('/trading');
+  };
+
   return (
     <section className="container px-4 py-24">
       <div className="max-w-2xl mx-auto text-center mb-12">
@@ -81,6 +90,7 @@ export const PricingSection = () => {
             "Email support (if we remember)",
             "Access to our meme collection"
           ]}
+          onGambleClick={handleGambleClick}
         />
         <PricingTier
           name="Serious Gambler"
@@ -95,6 +105,7 @@ export const PricingSection = () => {
             "Exclusive regret dashboard"
           ]}
           isPopular
+          onGambleClick={handleGambleClick}
         />
         <PricingTier
           name="Top Dog"
@@ -109,6 +120,7 @@ export const PricingSection = () => {
             "24/7 therapy hotline",
             "Complimentary tissues"
           ]}
+          onGambleClick={handleGambleClick}
         />
       </div>
     </section>

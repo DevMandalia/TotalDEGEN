@@ -3,8 +3,10 @@ import { useState, useEffect } from "react";
 import { Command, Menu } from "lucide-react";
 import { Button } from "./ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
+import { useNavigate } from "react-router-dom";
 
 const Navigation = () => {
+  const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -26,12 +28,7 @@ const Navigation = () => {
         window.scrollTo({ top: y, behavior: 'smooth' });
       }
     } else if (sectionId === 'cta') {
-      const ctaSection = document.querySelector('.button-gradient');
-      if (ctaSection) {
-        const yOffset = -100;
-        const y = ctaSection.getBoundingClientRect().top + window.pageYOffset + yOffset;
-        window.scrollTo({ top: y, behavior: 'smooth' });
-      }
+      navigate('/trading');
     } else {
       const element = document.getElementById(sectionId);
       if (element) {
@@ -79,7 +76,7 @@ const Navigation = () => {
               </a>
             ))}
             <Button 
-              onClick={() => scrollToSection('cta')}
+              onClick={() => navigate('/trading')}
               size="sm"
               className="button-gradient"
             >
@@ -116,7 +113,7 @@ const Navigation = () => {
                   <Button 
                     onClick={() => {
                       setIsMobileMenuOpen(false);
-                      scrollToSection('cta');
+                      navigate('/trading');
                     }}
                     className="button-gradient mt-4"
                   >

@@ -1,6 +1,8 @@
+
 import { motion } from "framer-motion";
 import { ArrowRight, Command } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import { FeaturesSection } from "@/components/features/FeaturesSection";
 import { PricingSection } from "@/components/pricing/PricingSection";
@@ -10,6 +12,12 @@ import Footer from "@/components/Footer";
 import { TextGenerateEffect } from "@/components/ui/text-generate-effect";
 
 const Index = () => {
+  const navigate = useNavigate();
+
+  const handleGambleClick = () => {
+    navigate('/trading');
+  };
+
   return (
     <div className="min-h-screen bg-black text-foreground">
       <Navigation />
@@ -65,7 +73,7 @@ const Index = () => {
             transition={{ delay: 0.5 }}
             className="flex flex-col sm:flex-row gap-4 items-start"
           >
-            <Button size="lg" className="button-gradient">
+            <Button size="lg" className="button-gradient" onClick={handleGambleClick}>
               Let's Gamble
             </Button>
             <Button size="lg" variant="link" className="text-white">
@@ -130,7 +138,7 @@ const Index = () => {
           <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
             Join thousands of traders who have already discovered the power of our platform.
           </p>
-          <Button size="lg" className="button-gradient">
+          <Button size="lg" className="button-gradient" onClick={handleGambleClick}>
             Create Account
             <ArrowRight className="ml-2 w-4 h-4" />
           </Button>
