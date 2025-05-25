@@ -1,24 +1,36 @@
+
 import { useState } from "react";
-import { ArrowLeft, Search } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
 import TradingNavigation from "@/components/trading/TradingNavigation";
 import CorrelationMatrix from "@/components/trading/CorrelationMatrix";
 import SelectedCryptoList from "@/components/trading/SelectedCryptoList";
 import ExchangeConnectionModal from "@/components/trading/ExchangeConnectionModal";
+import SettingsModal from "@/components/trading/SettingsModal";
 
 const Correlation = () => {
   const navigate = useNavigate();
   const [timeframe, setTimeframe] = useState("30d");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <TradingNavigation onAccountClick={() => setIsModalOpen(true)} />
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white relative overflow-hidden">
+      {/* Animated background */}
+      <div className="absolute inset-0 opacity-30">
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute top-3/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute bottom-1/4 left-1/2 w-80 h-80 bg-green-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+      </div>
+
+      <TradingNavigation 
+        onAccountClick={() => setIsModalOpen(true)} 
+        onSettingsClick={() => setIsSettingsOpen(true)}
+      />
       
-      <div className="p-6">
+      <div className="p-6 relative z-10">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
@@ -54,12 +66,12 @@ const Correlation = () => {
         </div>
 
         {/* Selected List */}
-        <Card className="bg-gray-900 border-gray-800 mb-6">
+        <Card className="bg-gray-900/50 backdrop-blur-sm border-gray-800/50 mb-6">
           <SelectedCryptoList />
         </Card>
 
         {/* Correlation Matrix */}
-        <Card className="bg-gray-900 border-gray-800">
+        <Card className="bg-gray-900/50 backdrop-blur-sm border-gray-800/50">
           <CorrelationMatrix timeframe={timeframe} />
         </Card>
       </div>
@@ -67,6 +79,11 @@ const Correlation = () => {
       <ExchangeConnectionModal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
+      />
+
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
       />
     </div>
   );

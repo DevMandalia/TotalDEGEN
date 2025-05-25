@@ -1,5 +1,6 @@
+
 import { useState } from "react";
-import { ArrowLeft, ArrowUpRight, ArrowDownRight, TrendingUp } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -7,10 +8,12 @@ import TradingNavigation from "@/components/trading/TradingNavigation";
 import PositionChart from "@/components/trading/PositionChart";
 import OrderBook from "@/components/trading/OrderBook";
 import ExchangeConnectionModal from "@/components/trading/ExchangeConnectionModal";
+import SettingsModal from "@/components/trading/SettingsModal";
 
 const Position = () => {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [position] = useState({
     symbol: "BTC",
     name: "Bitcoin",
@@ -25,10 +28,20 @@ const Position = () => {
   });
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <TradingNavigation onAccountClick={() => setIsModalOpen(true)} />
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white relative overflow-hidden">
+      {/* Animated background */}
+      <div className="absolute inset-0 opacity-30">
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute top-3/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute bottom-1/4 left-1/2 w-80 h-80 bg-green-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+      </div>
+
+      <TradingNavigation 
+        onAccountClick={() => setIsModalOpen(true)} 
+        onSettingsClick={() => setIsSettingsOpen(true)}
+      />
       
-      <div className="p-6">
+      <div className="p-6 relative z-10">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
           <Button 
@@ -48,7 +61,7 @@ const Position = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Chart and Price Info */}
           <div className="lg:col-span-2">
-            <Card className="bg-gray-900 border-gray-800 p-6 mb-6">
+            <Card className="bg-gray-900/50 backdrop-blur-sm border-gray-800/50 p-6 mb-6">
               <div className="mb-6">
                 <div className="text-3xl font-light mb-2">
                   ${position.price.toLocaleString()}
@@ -68,7 +81,7 @@ const Position = () => {
             </Card>
 
             {/* Position Details */}
-            <Card className="bg-gray-900 border-gray-800 p-6">
+            <Card className="bg-gray-900/50 backdrop-blur-sm border-gray-800/50 p-6">
               <h3 className="text-lg font-medium mb-4">Your {position.symbol} Position</h3>
               <div className="grid grid-cols-2 gap-6">
                 <div>
@@ -95,7 +108,7 @@ const Position = () => {
 
           {/* Trading Panel */}
           <div className="space-y-6">
-            <Card className="bg-gray-900 border-gray-800 p-6">
+            <Card className="bg-gray-900/50 backdrop-blur-sm border-gray-800/50 p-6">
               <div className="flex gap-2 mb-4">
                 <Button className="flex-1 bg-green-600 hover:bg-green-700">
                   Buy {position.symbol}
@@ -117,6 +130,11 @@ const Position = () => {
       <ExchangeConnectionModal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
+      />
+
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
       />
     </div>
   );

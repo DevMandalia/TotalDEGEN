@@ -13,6 +13,7 @@ interface ExchangeConnectionModalProps {
 
 const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalProps) => {
   const [selectedExchange, setSelectedExchange] = useState("");
+  const [connectionMode, setConnectionMode] = useState("Live");
   const [apiKey, setApiKey] = useState("");
   const [secretKey, setSecretKey] = useState("");
   const [showApiKey, setShowApiKey] = useState(false);
@@ -25,6 +26,12 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
     "Bybit",
     "OKX",
     "KuCoin"
+  ];
+
+  const connectionModes = [
+    { value: "Live", label: "Live Trading", description: "Real money trading" },
+    { value: "Testnet", label: "Testnet", description: "Test environment with fake money" },
+    { value: "Paper Trading", label: "Paper Trading", description: "Simulated trading" }
   ];
 
   return (
@@ -72,6 +79,25 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
 
             <div className="space-y-4">
               <div>
+                <label className="block text-sm text-gray-400 mb-2">Connection Mode</label>
+                <Select value={connectionMode} onValueChange={setConnectionMode}>
+                  <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                    <SelectValue placeholder="Select connection mode" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-800 border-gray-700">
+                    {connectionModes.map((mode) => (
+                      <SelectItem key={mode.value} value={mode.value} className="text-white">
+                        <div>
+                          <div>{mode.label}</div>
+                          <div className="text-xs text-gray-400">{mode.description}</div>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
                 <label className="block text-sm text-gray-400 mb-2">Exchange Platform</label>
                 <Select value={selectedExchange} onValueChange={setSelectedExchange}>
                   <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
@@ -87,59 +113,63 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
                 </Select>
               </div>
 
-              <div>
-                <label className="block text-sm text-gray-400 mb-2">API Key</label>
-                <div className="relative">
-                  <Input
-                    type={showApiKey ? "text" : "password"}
-                    value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
-                    placeholder="Enter your API key"
-                    className="bg-gray-800 border-gray-700 text-white pr-10"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowApiKey(!showApiKey)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
-                  >
-                    {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm text-gray-400 mb-2">Secret Key</label>
-                <div className="relative">
-                  <Input
-                    type={showSecretKey ? "text" : "password"}
-                    value={secretKey}
-                    onChange={(e) => setSecretKey(e.target.value)}
-                    placeholder="Enter your secret key"
-                    className="bg-gray-800 border-gray-700 text-white pr-10"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowSecretKey(!showSecretKey)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
-                  >
-                    {showSecretKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-              </div>
-
-              {/* Security Tips */}
-              <div className="bg-gray-800 rounded-lg p-3">
-                <div className="flex items-start gap-2">
-                  <Shield className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" />
-                  <div className="text-xs text-gray-300">
-                    <span className="font-medium text-yellow-400">Security Tips:</span> Only use API keys with trading permissions. Never share your secret key. Enable IP restrictions on your exchange account.
+              {connectionMode !== "Paper Trading" && (
+                <>
+                  <div>
+                    <label className="block text-sm text-gray-400 mb-2">API Key</label>
+                    <div className="relative">
+                      <Input
+                        type={showApiKey ? "text" : "password"}
+                        value={apiKey}
+                        onChange={(e) => setApiKey(e.target.value)}
+                        placeholder="Enter your API key"
+                        className="bg-gray-800 border-gray-700 text-white pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowApiKey(!showApiKey)}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
+                      >
+                        {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
                   </div>
-                </div>
-              </div>
+
+                  <div>
+                    <label className="block text-sm text-gray-400 mb-2">Secret Key</label>
+                    <div className="relative">
+                      <Input
+                        type={showSecretKey ? "text" : "password"}
+                        value={secretKey}
+                        onChange={(e) => setSecretKey(e.target.value)}
+                        placeholder="Enter your secret key"
+                        className="bg-gray-800 border-gray-700 text-white pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowSecretKey(!showSecretKey)}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
+                      >
+                        {showSecretKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Security Tips */}
+                  <div className="bg-gray-800 rounded-lg p-3">
+                    <div className="flex items-start gap-2">
+                      <Shield className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" />
+                      <div className="text-xs text-gray-300">
+                        <span className="font-medium text-yellow-400">Security Tips:</span> Only use API keys with trading permissions. Never share your secret key. Enable IP restrictions on your exchange account.
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
 
               <Button 
                 className="w-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white font-medium"
-                disabled={!selectedExchange || !apiKey || !secretKey}
+                disabled={connectionMode !== "Paper Trading" && (!selectedExchange || !apiKey || !secretKey)}
               >
                 Connect Exchange
               </Button>
