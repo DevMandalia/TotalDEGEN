@@ -37,6 +37,13 @@ const TradingNavigation = ({ onAccountClick, onSettingsClick }: TradingNavigatio
     // Add notification functionality here
   };
 
+  const handleSettingsClick = () => {
+    console.log("Settings clicked");
+    if (onSettingsClick) {
+      onSettingsClick();
+    }
+  };
+
   return (
     <nav className="border-b border-gray-800 bg-black px-6 py-3">
       <div className="flex items-center justify-between">
@@ -46,14 +53,14 @@ const TradingNavigation = ({ onAccountClick, onSettingsClick }: TradingNavigatio
               variant="ghost"
               size="icon"
               onClick={onAccountClick}
-              className={`w-8 h-8 bg-green-500 rounded-full hover:bg-green-600 flex items-center justify-center ${
+              className={`w-8 h-8 bg-green-500 rounded-full hover:bg-green-600 flex items-center justify-center cursor-pointer ${
                 isConnected ? 'animate-pulse shadow-lg shadow-green-500/50' : ''
               }`}
             >
               <Zap className="w-4 h-4 text-black" />
             </Button>
             <div className="flex items-center gap-3">
-              <span className="font-semibold text-lg cursor-pointer" onClick={() => navigate('/trading')}>TotalDEGEN</span>
+              <span className="font-semibold text-lg cursor-pointer text-white hover:text-green-400 transition-colors" onClick={() => navigate('/trading')}>TotalDEGEN</span>
               <span className={`text-xs font-medium ${getStatusColor(connectionStatus)}`}>
                 {connectionStatus}
               </span>
@@ -65,18 +72,22 @@ const TradingNavigation = ({ onAccountClick, onSettingsClick }: TradingNavigatio
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
               return (
-                <button
+                <Button
                   key={item.name}
-                  onClick={() => navigate(item.path)}
+                  variant="ghost"
+                  onClick={() => {
+                    console.log(`Navigating to ${item.path}`);
+                    navigate(item.path);
+                  }}
                   className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm transition-colors cursor-pointer ${
                     isActive 
-                      ? "bg-green-600 text-white" 
+                      ? "bg-green-600 text-white hover:bg-green-700" 
                       : "text-gray-400 hover:text-white hover:bg-gray-800"
                   }`}
                 >
                   <Icon className="w-4 h-4" />
                   <span>{item.name}</span>
-                </button>
+                </Button>
               );
             })}
           </div>
@@ -104,7 +115,7 @@ const TradingNavigation = ({ onAccountClick, onSettingsClick }: TradingNavigatio
             variant="ghost" 
             size="icon" 
             className="hover:bg-gray-800 text-gray-400 cursor-pointer"
-            onClick={onSettingsClick}
+            onClick={handleSettingsClick}
           >
             <Settings className="w-5 h-5" />
           </Button>
