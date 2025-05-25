@@ -32,6 +32,11 @@ const TradingNavigation = ({ onAccountClick, onSettingsClick }: TradingNavigatio
 
   const isConnected = connectionStatus === "Live" || connectionStatus === "Testnet" || connectionStatus === "Paper Trading";
 
+  const handleNotificationClick = () => {
+    console.log("Notifications clicked");
+    // Add notification functionality here
+  };
+
   return (
     <nav className="border-b border-gray-800 bg-black px-6 py-3">
       <div className="flex items-center justify-between">
@@ -86,7 +91,12 @@ const TradingNavigation = ({ onAccountClick, onSettingsClick }: TradingNavigatio
             />
           </div>
           
-          <Button variant="ghost" size="icon" className="hover:bg-gray-800 text-gray-400">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="hover:bg-gray-800 text-gray-400 cursor-pointer"
+            onClick={handleNotificationClick}
+          >
             <Bell className="w-5 h-5" />
           </Button>
           
