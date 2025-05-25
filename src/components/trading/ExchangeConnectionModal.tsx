@@ -1,10 +1,11 @@
-
 import { useState } from "react";
 import { X, Shield, Wifi, Link, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+
+const API_URL = "https://3000-i55ier1dg4ii27z5jww1z-a32dc834.manus.computer/api";
 
 interface ExchangeConnectionModalProps {
   isOpen: boolean;
