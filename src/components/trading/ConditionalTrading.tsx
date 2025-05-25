@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Plus, X, Trash2, Settings, Eye, EyeOff } from "lucide-react";
+import { Plus, X, Trash2, MoreHorizontal, Eye, EyeOff, Search } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 interface Condition {
   id: string;
@@ -58,22 +60,24 @@ interface VisibleParameters {
 }
 
 const ConditionalTrading = () => {
-  const [timeframe, setTimeframe] = useState("1min");
-  const [position, setPosition] = useState("Buy");
-  
   const [entryConditions, setEntryConditions] = useState<Condition[]>([
-    { id: "1", type: "Open", operator: "10", value: "" }
+    { id: "1", type: "Open", operator: ">", value: "" }
   ]);
   const [entryConnector, setEntryConnector] = useState("and");
   
   const [exitConditions, setExitConditions] = useState<Condition[]>([
-    { id: "1", type: "Close", operator: "10", value: "" }
+    { id: "1", type: "Close", operator: ">", value: "" }
   ]);
   const [exitConnector, setExitConnector] = useState("and");
   
   const [actions, setActions] = useState<Action[]>([
     { id: "1", type: "Close Position", orderType: "Market", symbol: "BTC" }
   ]);
+
+  const [assetSearchOpen, setAssetSearchOpen] = useState(false);
+  const [parameterSearchOpen, setParameterSearchOpen] = useState(false);
+  const [assetSearchTerm, setAssetSearchTerm] = useState("");
+  const [parameterSearchTerm, setParameterSearchTerm] = useState("");
 
   // Mock positions data - sorted by notional size
   const [allPositions] = useState<Position[]>([
@@ -144,6 +148,25 @@ const ConditionalTrading = () => {
     unrealizedPnL: false
   });
 
+  // Crypto assets from watchlist
+  const cryptoAssets = [
+    { symbol: "BTC", name: "Bitcoin" },
+    { symbol: "ETH", name: "Ethereum" },
+    { symbol: "SOL", name: "Solana" },
+    { symbol: "ADA", name: "Cardano" },
+    { symbol: "DOT", name: "Polkadot" },
+    { symbol: "MATIC", name: "Polygon" },
+    { symbol: "AVAX", name: "Avalanche" },
+    { symbol: "LINK", name: "Chainlink" }
+  ];
+
+  const technicalIndicators = [
+    "Open", "Close", "High", "Low", "Volume",
+    "RSI", "MACD", "ADX", "Bollinger Bands",
+    "Moving Average", "Stochastic", "Williams %R",
+    "Price", "Market Cap", "24h Volume"
+  ];
+
   const showMorePositions = () => {
     if (visiblePositions.length < Math.min(allPositions.length, 10)) {
       setVisiblePositions([...visiblePositions, allPositions[visiblePositions.length]]);
@@ -157,12 +180,6 @@ const ConditionalTrading = () => {
   const toggleParameter = (param: keyof VisibleParameters) => {
     setVisibleParams(prev => ({ ...prev, [param]: !prev[param] }));
   };
-
-  const conditionTypes = [
-    "Open", "Close", "High", "Low", "Volume",
-    "RSI", "MACD", "ADX", "Bollinger Bands",
-    "Moving Average", "Stochastic", "Williams %R"
-  ];
 
   const actionTypes = [
     "Close Position", "Open Position", "Modify Stop Loss",
@@ -255,6 +272,15 @@ const ConditionalTrading = () => {
     );
   };
 
+  const filteredCryptoAssets = cryptoAssets.filter(asset =>
+    asset.symbol.toLowerCase().includes(assetSearchTerm.toLowerCase()) ||
+    asset.name.toLowerCase().includes(assetSearchTerm.toLowerCase())
+  );
+
+  const filteredParameters = technicalIndicators.filter(indicator =>
+    indicator.toLowerCase().includes(parameterSearchTerm.toLowerCase())
+  );
+
   return (
     <Card className="backdrop-blur-md bg-white/5 border border-white/20 p-6 shadow-2xl">
       <div className="flex items-center justify-between mb-6">
@@ -262,32 +288,31 @@ const ConditionalTrading = () => {
           Conditional Ordering
         </h3>
         
-        <Popover>
-          <PopoverTrigger asChild>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
             <Button className="backdrop-blur-md bg-white/5 hover:bg-white/10 border border-white/20 font-bold transition-all duration-300 text-white">
-              <Settings className="w-4 h-4 mr-2" />
-              Parameters
+              <MoreHorizontal className="w-4 h-4" />
             </Button>
-          </PopoverTrigger>
-          <PopoverContent className="backdrop-blur-md bg-gray-900/90 border border-white/20 p-4">
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="backdrop-blur-md bg-gray-900/90 border border-white/20 p-4">
             <div className="space-y-2">
               <h4 className="font-medium text-white mb-3">Visible Parameters</h4>
               {Object.entries(visibleParams).map(([key, value]) => (
-                <div key={key} className="flex items-center space-x-2">
+                <DropdownMenuItem key={key} className="flex items-center space-x-2 cursor-pointer">
                   <button
                     onClick={() => toggleParameter(key as keyof VisibleParameters)}
-                    className="text-white hover:text-blue-400"
+                    className="text-white hover:text-blue-400 flex items-center space-x-2"
                   >
                     {value ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                    <span className="text-sm text-gray-300 capitalize">
+                      {key.replace(/([A-Z])/g, ' $1').trim()}
+                    </span>
                   </button>
-                  <span className="text-sm text-gray-300 capitalize">
-                    {key.replace(/([A-Z])/g, ' $1').trim()}
-                  </span>
-                </div>
+                </DropdownMenuItem>
               ))}
             </div>
-          </PopoverContent>
-        </Popover>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Position Parameters */}
@@ -295,7 +320,21 @@ const ConditionalTrading = () => {
         {visiblePositions.map((pos, index) => (
           <div key={pos.id} className="backdrop-blur-sm bg-white/5 border border-white/10 rounded-lg p-4">
             <div className="flex items-center justify-between mb-3">
-              <h4 className="text-white font-bold">Position {index + 1}</h4>
+              <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 flex-1">
+                {visibleParams.assetName && renderPositionParameter("Asset", pos.assetName)}
+                {visibleParams.side && renderPositionParameter("Side", pos.side)}
+                {visibleParams.leverage && renderPositionParameter("Leverage", pos.leverage)}
+                {visibleParams.entryPrice && renderPositionParameter("Entry Price", pos.entryPrice)}
+                {visibleParams.currentPrice && renderPositionParameter("Current Price", pos.currentPrice)}
+                {visibleParams.notionalSize && renderPositionParameter("Notional Size", pos.notionalSize)}
+                {visibleParams.breakevenPrice && renderPositionParameter("Breakeven", pos.breakevenPrice)}
+                {visibleParams.marginAmount && renderPositionParameter("Margin", pos.marginAmount)}
+                {visibleParams.marginType && renderPositionParameter("Margin Type", pos.marginType)}
+                {visibleParams.realTimePnL && renderPositionParameter("Real-time PnL", pos.realTimePnL, pos.realTimePnL > 0)}
+                {visibleParams.pnLPercent && renderPositionParameter("PnL %", pos.pnLPercent, pos.pnLPercent > 0)}
+                {visibleParams.liquidationPrice && renderPositionParameter("Liquidation", pos.liquidationPrice)}
+                {visibleParams.unrealizedPnL && renderPositionParameter("Unrealized PnL", pos.unrealizedPnL, pos.unrealizedPnL > 0)}
+              </div>
               {visiblePositions.length > 1 && (
                 <Button
                   variant="ghost"
@@ -306,21 +345,6 @@ const ConditionalTrading = () => {
                   <X className="w-4 h-4" />
                 </Button>
               )}
-            </div>
-            <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
-              {visibleParams.assetName && renderPositionParameter("Asset", pos.assetName)}
-              {visibleParams.side && renderPositionParameter("Side", pos.side)}
-              {visibleParams.leverage && renderPositionParameter("Leverage", pos.leverage)}
-              {visibleParams.entryPrice && renderPositionParameter("Entry Price", pos.entryPrice)}
-              {visibleParams.currentPrice && renderPositionParameter("Current Price", pos.currentPrice)}
-              {visibleParams.notionalSize && renderPositionParameter("Notional Size", pos.notionalSize)}
-              {visibleParams.breakevenPrice && renderPositionParameter("Breakeven", pos.breakevenPrice)}
-              {visibleParams.marginAmount && renderPositionParameter("Margin", pos.marginAmount)}
-              {visibleParams.marginType && renderPositionParameter("Margin Type", pos.marginType)}
-              {visibleParams.realTimePnL && renderPositionParameter("Real-time PnL", pos.realTimePnL, pos.realTimePnL > 0)}
-              {visibleParams.pnLPercent && renderPositionParameter("PnL %", pos.pnLPercent, pos.pnLPercent > 0)}
-              {visibleParams.liquidationPrice && renderPositionParameter("Liquidation", pos.liquidationPrice)}
-              {visibleParams.unrealizedPnL && renderPositionParameter("Unrealized PnL", pos.unrealizedPnL, pos.unrealizedPnL > 0)}
             </div>
           </div>
         ))}
@@ -336,81 +360,129 @@ const ConditionalTrading = () => {
         )}
       </div>
 
-      {/* Candle Intervals and Position */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div className="space-y-2">
-          <label className="text-gray-400 text-sm">Candle Intervals</label>
-          <ToggleGroup type="single" value={timeframe} onValueChange={setTimeframe} className="justify-start">
-            {["1min", "3min", "5min", "15min", "1hr"].map((tf) => (
-              <ToggleGroupItem
-                key={tf}
-                value={tf}
-                className="backdrop-blur-sm bg-white/10 border border-white/20 text-white data-[state=on]:bg-green-500/20 data-[state=on]:text-green-400"
-              >
-                {tf}
-              </ToggleGroupItem>
-            ))}
-          </ToggleGroup>
+      {/* Workflow Diamond Layout */}
+      <div className="flex flex-col items-center mb-8">
+        {/* IF Diamond */}
+        <div className="relative">
+          <div className="w-24 h-24 bg-gradient-to-r from-blue-400 via-purple-500 to-green-400 rotate-45 flex items-center justify-center backdrop-blur-md border border-white/20 shadow-2xl">
+            <span className="text-xl font-bold text-white -rotate-45">IF</span>
+          </div>
+          
+          {/* Connecting Lines */}
+          <div className="absolute top-1/2 -left-20 w-16 h-0.5 bg-gradient-to-l from-green-400 to-transparent"></div>
+          <div className="absolute top-1/2 -right-20 w-16 h-0.5 bg-gradient-to-r from-red-400 to-transparent"></div>
+          
+          {/* TRUE/FALSE Labels */}
+          <div className="absolute top-1/2 -right-32 transform -translate-y-1/2 text-red-400 font-bold text-sm">FALSE</div>
+          <div className="absolute top-1/2 -left-32 transform -translate-y-1/2 text-green-400 font-bold text-sm">TRUE</div>
         </div>
-        <div className="space-y-2">
-          <label className="text-gray-400 text-sm">Position</label>
-          <ToggleGroup type="single" value={position} onValueChange={setPosition} className="justify-start">
-            <ToggleGroupItem
-              value="Buy"
-              className="backdrop-blur-sm bg-white/10 border border-white/20 text-white data-[state=on]:bg-green-500/20 data-[state=on]:text-green-400"
-            >
-              Buy
-            </ToggleGroupItem>
-            <ToggleGroupItem
-              value="Sell"
-              className="backdrop-blur-sm bg-white/10 border border-white/20 text-white data-[state=on]:bg-red-500/20 data-[state=on]:text-red-400"
-            >
-              Sell
-            </ToggleGroupItem>
-          </ToggleGroup>
+
+        {/* Add Condition Button */}
+        <div className="mt-8">
+          <Button
+            variant="ghost"
+            onClick={() => addCondition('entry')}
+            disabled={entryConditions.length >= 8}
+            className="backdrop-blur-sm bg-gradient-to-r from-blue-500/30 to-purple-500/30 border border-blue-400/50 text-blue-200 hover:bg-gradient-to-r hover:from-blue-500/50 hover:to-purple-500/50 hover:border-blue-400/80 hover:text-blue-100 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Condition {entryConditions.length + 1}
+          </Button>
         </div>
       </div>
 
       {/* Entry Conditions */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
-          <h4 className="text-xl font-bold bg-gradient-to-r from-blue-400 via-purple-500 to-green-400 bg-clip-text text-transparent drop-shadow-lg">
-            If
-          </h4>
-          <ToggleGroup type="single" value={entryConnector} onValueChange={setEntryConnector}>
-            <ToggleGroupItem 
-              value="and" 
-              className="backdrop-blur-sm bg-gradient-to-r from-emerald-500/30 to-teal-500/30 border border-emerald-400/50 text-emerald-200 data-[state=on]:bg-gradient-to-r data-[state=on]:from-emerald-500/60 data-[state=on]:to-teal-500/60 data-[state=on]:border-emerald-400/80 data-[state=on]:text-emerald-100 transition-all duration-300 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:bg-gradient-to-r hover:from-emerald-500/40 hover:to-teal-500/40"
-            >
-              AND
-            </ToggleGroupItem>
-            <ToggleGroupItem 
-              value="or" 
-              className="backdrop-blur-sm bg-gradient-to-r from-amber-500/30 to-orange-500/30 border border-amber-400/50 text-amber-200 data-[state=on]:bg-gradient-to-r data-[state=on]:from-amber-500/60 data-[state=on]:to-orange-500/60 data-[state=on]:border-amber-400/80 data-[state=on]:text-amber-100 transition-all duration-300 shadow-lg shadow-amber-500/20 hover:shadow-amber-500/40 hover:bg-gradient-to-r hover:from-amber-500/40 hover:to-orange-500/40"
-            >
-              OR
-            </ToggleGroupItem>
-          </ToggleGroup>
+          <div className="flex items-center gap-4">
+            <ToggleGroup type="single" value={entryConnector} onValueChange={setEntryConnector}>
+              <ToggleGroupItem 
+                value="and" 
+                className="backdrop-blur-sm bg-gradient-to-r from-emerald-500/30 to-teal-500/30 border border-emerald-400/50 text-emerald-200 data-[state=on]:bg-gradient-to-r data-[state=on]:from-emerald-500/60 data-[state=on]:to-teal-500/60 data-[state=on]:border-emerald-400/80 data-[state=on]:text-emerald-100 transition-all duration-300 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:bg-gradient-to-r hover:from-emerald-500/40 hover:to-teal-500/40"
+              >
+                AND
+              </ToggleGroupItem>
+              <ToggleGroupItem 
+                value="or" 
+                className="backdrop-blur-sm bg-gradient-to-r from-amber-500/30 to-orange-500/30 border border-amber-400/50 text-amber-200 data-[state=on]:bg-gradient-to-r data-[state=on]:from-amber-500/60 data-[state=on]:to-orange-500/60 data-[state=on]:border-amber-400/80 data-[state=on]:text-amber-100 transition-all duration-300 shadow-lg shadow-amber-500/20 hover:shadow-amber-500/40 hover:bg-gradient-to-r hover:from-amber-500/40 hover:to-orange-500/40"
+              >
+                OR
+              </ToggleGroupItem>
+              <ToggleGroupItem 
+                value="(" 
+                className="backdrop-blur-sm bg-gradient-to-r from-gray-500/30 to-slate-500/30 border border-gray-400/50 text-gray-200 data-[state=on]:bg-gradient-to-r data-[state=on]:from-gray-500/60 data-[state=on]:to-slate-500/60 data-[state=on]:border-gray-400/80 data-[state=on]:text-gray-100 transition-all duration-300 shadow-lg shadow-gray-500/20 hover:shadow-gray-500/40 hover:bg-gradient-to-r hover:from-gray-500/40 hover:to-slate-500/40"
+              >
+                (
+              </ToggleGroupItem>
+              <ToggleGroupItem 
+                value=")" 
+                className="backdrop-blur-sm bg-gradient-to-r from-gray-500/30 to-slate-500/30 border border-gray-400/50 text-gray-200 data-[state=on]:bg-gradient-to-r data-[state=on]:from-gray-500/60 data-[state=on]:to-slate-500/60 data-[state=on]:border-gray-400/80 data-[state=on]:text-gray-100 transition-all duration-300 shadow-lg shadow-gray-500/20 hover:shadow-gray-500/40 hover:bg-gradient-to-r hover:from-gray-500/40 hover:to-slate-500/40"
+              >
+                )
+              </ToggleGroupItem>
+            </ToggleGroup>
+          </div>
         </div>
         
-        <div className="space-y-3">
+        <div className="space-y-2">
           {entryConditions.map((condition, index) => (
-            <div key={condition.id} className="flex items-center gap-3 backdrop-blur-sm bg-white/5 border border-white/10 rounded-lg p-3">
-              <Select value={condition.type} onValueChange={(value) => updateCondition(condition.id, 'type', value, 'entry')}>
-                <SelectTrigger className="backdrop-blur-sm bg-white/10 border border-white/20 text-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="backdrop-blur-md bg-gray-900/90 border border-white/20">
-                  {conditionTypes.map((type) => (
-                    <SelectItem key={type} value={type} className="text-white hover:bg-white/10">
-                      {type}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div key={condition.id} className="flex items-center gap-2 backdrop-blur-sm bg-white/5 border border-white/10 rounded-lg p-2">
+              {/* Asset/Parameter Selector with Search Modal */}
+              <Dialog open={assetSearchOpen} onOpenChange={setAssetSearchOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="backdrop-blur-sm bg-white/10 border border-white/20 text-white hover:bg-white/20 min-w-[120px] justify-start">
+                    {condition.type || "Select Asset"}
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="backdrop-blur-md bg-gray-900/90 border border-white/20">
+                  <DialogHeader>
+                    <DialogTitle className="text-white">Select Asset or Parameter</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                      <Input
+                        placeholder="Search assets or indicators..."
+                        value={assetSearchTerm}
+                        onChange={(e) => setAssetSearchTerm(e.target.value)}
+                        className="pl-10 backdrop-blur-sm bg-white/10 border border-white/20 text-white placeholder:text-gray-400"
+                      />
+                    </div>
+                    <div className="max-h-60 overflow-y-auto space-y-1">
+                      {filteredCryptoAssets.map((asset) => (
+                        <button
+                          key={asset.symbol}
+                          onClick={() => {
+                            updateCondition(condition.id, 'type', asset.symbol, 'entry');
+                            setAssetSearchOpen(false);
+                            setAssetSearchTerm("");
+                          }}
+                          className="w-full text-left p-2 rounded hover:bg-white/10 text-white"
+                        >
+                          <div className="font-medium">{asset.symbol}</div>
+                          <div className="text-sm text-gray-400">{asset.name}</div>
+                        </button>
+                      ))}
+                      {filteredParameters.map((param) => (
+                        <button
+                          key={param}
+                          onClick={() => {
+                            updateCondition(condition.id, 'type', param, 'entry');
+                            setAssetSearchOpen(false);
+                            setAssetSearchTerm("");
+                          }}
+                          className="w-full text-left p-2 rounded hover:bg-white/10 text-white"
+                        >
+                          {param}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
               
               <Select value={condition.operator} onValueChange={(value) => updateCondition(condition.id, 'operator', value, 'entry')}>
-                <SelectTrigger className="w-20 backdrop-blur-sm bg-white/10 border border-white/20 text-white">
+                <SelectTrigger className="w-16 backdrop-blur-sm bg-white/10 border border-white/20 text-white">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="backdrop-blur-md bg-gray-900/90 border border-white/20">
@@ -419,6 +491,11 @@ const ConditionalTrading = () => {
                   <SelectItem value="=" className="text-white hover:bg-white/10">{"="}</SelectItem>
                   <SelectItem value=">=" className="text-white hover:bg-white/10">{">="}</SelectItem>
                   <SelectItem value="<=" className="text-white hover:bg-white/10">{"<="}</SelectItem>
+                  <SelectItem value="!=" className="text-white hover:bg-white/10">{"!="}</SelectItem>
+                  <SelectItem value="+" className="text-white hover:bg-white/10">{"+"}</SelectItem>
+                  <SelectItem value="-" className="text-white hover:bg-white/10">{"-"}</SelectItem>
+                  <SelectItem value="*" className="text-white hover:bg-white/10">{"*"}</SelectItem>
+                  <SelectItem value="/" className="text-white hover:bg-white/10">{"/"}</SelectItem>
                 </SelectContent>
               </Select>
               
@@ -426,7 +503,7 @@ const ConditionalTrading = () => {
                 placeholder="Value"
                 value={condition.value}
                 onChange={(e) => updateCondition(condition.id, 'value', e.target.value, 'entry')}
-                className="backdrop-blur-sm bg-white/10 border border-white/20 text-white placeholder:text-gray-400"
+                className="backdrop-blur-sm bg-white/10 border border-white/20 text-white placeholder:text-gray-400 flex-1"
               />
               
               {index < entryConditions.length - 1 && (
@@ -445,18 +522,6 @@ const ConditionalTrading = () => {
               </Button>
             </div>
           ))}
-          
-          <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              onClick={() => addCondition('entry')}
-              disabled={entryConditions.length >= 8}
-              className="backdrop-blur-sm bg-gradient-to-r from-blue-500/30 to-purple-500/30 border border-blue-400/50 text-blue-200 hover:bg-gradient-to-r hover:from-blue-500/50 hover:to-purple-500/50 hover:border-blue-400/80 hover:text-blue-100 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add New
-            </Button>
-          </div>
         </div>
       </div>
 
@@ -479,27 +544,79 @@ const ConditionalTrading = () => {
             >
               OR
             </ToggleGroupItem>
+            <ToggleGroupItem 
+              value="(" 
+              className="backdrop-blur-sm bg-gradient-to-r from-gray-500/30 to-slate-500/30 border border-gray-400/50 text-gray-200 data-[state=on]:bg-gradient-to-r data-[state=on]:from-gray-500/60 data-[state=on]:to-slate-500/60 data-[state=on]:border-gray-400/80 data-[state=on]:text-gray-100 transition-all duration-300 shadow-lg shadow-gray-500/20 hover:shadow-gray-500/40 hover:bg-gradient-to-r hover:from-gray-500/40 hover:to-slate-500/40"
+            >
+              (
+            </ToggleGroupItem>
+            <ToggleGroupItem 
+              value=")" 
+              className="backdrop-blur-sm bg-gradient-to-r from-gray-500/30 to-slate-500/30 border border-gray-400/50 text-gray-200 data-[state=on]:bg-gradient-to-r data-[state=on]:from-gray-500/60 data-[state=on]:to-slate-500/60 data-[state=on]:border-gray-400/80 data-[state=on]:text-gray-100 transition-all duration-300 shadow-lg shadow-gray-500/20 hover:shadow-gray-500/40 hover:bg-gradient-to-r hover:from-gray-500/40 hover:to-slate-500/40"
+            >
+              )
+            </ToggleGroupItem>
           </ToggleGroup>
         </div>
         
-        <div className="space-y-3">
+        <div className="space-y-2">
           {exitConditions.map((condition, index) => (
-            <div key={condition.id} className="flex items-center gap-3 backdrop-blur-sm bg-white/5 border border-white/10 rounded-lg p-3">
-              <Select value={condition.type} onValueChange={(value) => updateCondition(condition.id, 'type', value, 'exit')}>
-                <SelectTrigger className="backdrop-blur-sm bg-white/10 border border-white/20 text-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="backdrop-blur-md bg-gray-900/90 border border-white/20">
-                  {conditionTypes.map((type) => (
-                    <SelectItem key={type} value={type} className="text-white hover:bg-white/10">
-                      {type}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div key={condition.id} className="flex items-center gap-2 backdrop-blur-sm bg-white/5 border border-white/10 rounded-lg p-2">
+              <Dialog open={parameterSearchOpen} onOpenChange={setParameterSearchOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="backdrop-blur-sm bg-white/10 border border-white/20 text-white hover:bg-white/20 min-w-[120px] justify-start">
+                    {condition.type || "Select Parameter"}
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="backdrop-blur-md bg-gray-900/90 border border-white/20">
+                  <DialogHeader>
+                    <DialogTitle className="text-white">Select Parameter or Asset</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                      <Input
+                        placeholder="Search parameters or assets..."
+                        value={parameterSearchTerm}
+                        onChange={(e) => setParameterSearchTerm(e.target.value)}
+                        className="pl-10 backdrop-blur-sm bg-white/10 border border-white/20 text-white placeholder:text-gray-400"
+                      />
+                    </div>
+                    <div className="max-h-60 overflow-y-auto space-y-1">
+                      {filteredParameters.map((param) => (
+                        <button
+                          key={param}
+                          onClick={() => {
+                            updateCondition(condition.id, 'type', param, 'exit');
+                            setParameterSearchOpen(false);
+                            setParameterSearchTerm("");
+                          }}
+                          className="w-full text-left p-2 rounded hover:bg-white/10 text-white"
+                        >
+                          {param}
+                        </button>
+                      ))}
+                      {filteredCryptoAssets.map((asset) => (
+                        <button
+                          key={asset.symbol}
+                          onClick={() => {
+                            updateCondition(condition.id, 'type', asset.symbol, 'exit');
+                            setParameterSearchOpen(false);
+                            setParameterSearchTerm("");
+                          }}
+                          className="w-full text-left p-2 rounded hover:bg-white/10 text-white"
+                        >
+                          <div className="font-medium">{asset.symbol}</div>
+                          <div className="text-sm text-gray-400">{asset.name}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
               
               <Select value={condition.operator} onValueChange={(value) => updateCondition(condition.id, 'operator', value, 'exit')}>
-                <SelectTrigger className="w-20 backdrop-blur-sm bg-white/10 border border-white/20 text-white">
+                <SelectTrigger className="w-16 backdrop-blur-sm bg-white/10 border border-white/20 text-white">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="backdrop-blur-md bg-gray-900/90 border border-white/20">
@@ -508,6 +625,11 @@ const ConditionalTrading = () => {
                   <SelectItem value="=" className="text-white hover:bg-white/10">{"="}</SelectItem>
                   <SelectItem value=">=" className="text-white hover:bg-white/10">{">="}</SelectItem>
                   <SelectItem value="<=" className="text-white hover:bg-white/10">{"<="}</SelectItem>
+                  <SelectItem value="!=" className="text-white hover:bg-white/10">{"!="}</SelectItem>
+                  <SelectItem value="+" className="text-white hover:bg-white/10">{"+"}</SelectItem>
+                  <SelectItem value="-" className="text-white hover:bg-white/10">{"-"}</SelectItem>
+                  <SelectItem value="*" className="text-white hover:bg-white/10">{"*"}</SelectItem>
+                  <SelectItem value="/" className="text-white hover:bg-white/10">{"/"}</SelectItem>
                 </SelectContent>
               </Select>
               
@@ -515,7 +637,7 @@ const ConditionalTrading = () => {
                 placeholder="Value"
                 value={condition.value}
                 onChange={(e) => updateCondition(condition.id, 'value', e.target.value, 'exit')}
-                className="backdrop-blur-sm bg-white/10 border border-white/20 text-white placeholder:text-gray-400"
+                className="backdrop-blur-sm bg-white/10 border border-white/20 text-white placeholder:text-gray-400 flex-1"
               />
               
               {index < exitConditions.length - 1 && (
@@ -535,17 +657,15 @@ const ConditionalTrading = () => {
             </div>
           ))}
           
-          <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              onClick={() => addCondition('exit')}
-              disabled={exitConditions.length >= 8}
-              className="backdrop-blur-sm bg-gradient-to-r from-pink-500/30 to-rose-500/30 border border-pink-400/50 text-pink-200 hover:bg-gradient-to-r hover:from-pink-500/50 hover:to-rose-500/50 hover:border-pink-400/80 hover:text-pink-100 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-pink-500/20 hover:shadow-pink-500/40"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add New
-            </Button>
-          </div>
+          <Button
+            variant="ghost"
+            onClick={() => addCondition('exit')}
+            disabled={exitConditions.length >= 8}
+            className="backdrop-blur-sm bg-gradient-to-r from-pink-500/30 to-rose-500/30 border border-pink-400/50 text-pink-200 hover:bg-gradient-to-r hover:from-pink-500/50 hover:to-rose-500/50 hover:border-pink-400/80 hover:text-pink-100 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-pink-500/20 hover:shadow-pink-500/40"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Condition {exitConditions.length + 1}
+          </Button>
         </div>
       </div>
 
@@ -555,9 +675,9 @@ const ConditionalTrading = () => {
           Actions to Execute
         </h4>
         
-        <div className="space-y-3">
+        <div className="space-y-2">
           {actions.map((action) => (
-            <div key={action.id} className="flex items-center gap-3 backdrop-blur-sm bg-white/5 border border-white/10 rounded-lg p-3">
+            <div key={action.id} className="flex items-center gap-2 backdrop-blur-sm bg-white/5 border border-white/10 rounded-lg p-2">
               <Select value={action.type} onValueChange={(value) => updateAction(action.id, 'type', value)}>
                 <SelectTrigger className="backdrop-blur-sm bg-white/10 border border-white/20 text-white">
                   <SelectValue />
