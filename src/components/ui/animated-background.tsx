@@ -47,7 +47,7 @@ const AnimatedBackground = () => {
         animation: 'gridShift 25s linear infinite'
       }}></div>
       
-      <style jsx>{`
+      <style>{`
         @keyframes float {
           0%, 100% { transform: translate(0, 0) scale(1); }
           25% { transform: translate(-20px, -20px) scale(1.1); }
