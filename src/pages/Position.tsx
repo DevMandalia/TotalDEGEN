@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { ArrowUpRight, ArrowDownRight, TrendingUp, Shield, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -38,12 +39,12 @@ const Position = () => {
   });
 
   const orderTypes = [
-    { type: "Market Buy", color: "bg-green-600 hover:bg-green-700", icon: TrendingUp },
-    { type: "Market Sell", color: "bg-red-600 hover:bg-red-700", icon: TrendingUp },
-    { type: "Limit Buy", color: "bg-blue-600 hover:bg-blue-700", icon: Target },
-    { type: "Limit Sell", color: "bg-purple-600 hover:bg-purple-700", icon: Target },
-    { type: "Stop Loss", color: "bg-orange-600 hover:bg-orange-700", icon: Shield },
-    { type: "Take Profit", color: "bg-yellow-600 hover:bg-yellow-700", icon: TrendingUp }
+    { type: "Market Buy", color: "backdrop-blur-md bg-green-600/20 hover:bg-green-600/30 border border-green-500/30 text-green-400", icon: TrendingUp },
+    { type: "Market Sell", color: "backdrop-blur-md bg-red-600/20 hover:bg-red-600/30 border border-red-500/30 text-red-400", icon: TrendingUp },
+    { type: "Limit Buy", color: "backdrop-blur-md bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/30 text-blue-400", icon: Target },
+    { type: "Limit Sell", color: "backdrop-blur-md bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/30 text-purple-400", icon: Target },
+    { type: "Stop Loss", color: "backdrop-blur-md bg-orange-600/20 hover:bg-orange-600/30 border border-orange-500/30 text-orange-400", icon: Shield },
+    { type: "Take Profit", color: "backdrop-blur-md bg-yellow-600/20 hover:bg-yellow-600/30 border border-yellow-500/30 text-yellow-400", icon: TrendingUp }
   ];
 
   return (
@@ -56,53 +57,58 @@ const Position = () => {
       />
       
       <div className="p-6 relative z-10">
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-6">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gradient-to-r from-blue-500/80 to-purple-600/80 rounded-full flex items-center justify-center backdrop-blur-md border border-white/20">
-              <span className="text-sm font-bold text-white">{position.symbol}</span>
+        {/* Header with Position Info and Hedging Button */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gradient-to-r from-blue-500/80 to-purple-600/80 rounded-full flex items-center justify-center backdrop-blur-md border border-white/20">
+                <span className="text-sm font-bold text-white">{position.symbol}</span>
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+                  {position.name} Position
+                </h1>
+                <div className="flex items-center gap-2">
+                  <span className={`text-sm font-medium px-2 py-1 rounded backdrop-blur-md border border-white/20 ${
+                    position.side === 'LONG' ? 'bg-green-600/30 text-green-400' : 'bg-red-600/30 text-red-400'
+                  }`}>
+                    {position.side}
+                  </span>
+                  <span className="text-gray-400">{position.leverage}</span>
+                </div>
+              </div>
             </div>
-            <div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-                {position.name} Position
-              </h1>
-              <div className="flex items-center gap-2">
-                <span className={`text-sm font-medium px-2 py-1 rounded backdrop-blur-md border border-white/20 ${
-                  position.side === 'LONG' ? 'bg-green-600/30 text-green-400' : 'bg-red-600/30 text-red-400'
-                }`}>
-                  {position.side}
-                </span>
-                <span className="text-gray-400">{position.leverage}</span>
+            
+            {/* Position Values */}
+            <div className="flex items-center gap-6">
+              <div>
+                <div className="text-3xl font-bold bg-gradient-to-r from-blue-400 via-purple-500 to-green-400 bg-clip-text text-transparent">
+                  ${position.currentPrice.toLocaleString()}
+                </div>
+                <div className="flex items-center gap-2">
+                  {position.isProfit ? (
+                    <ArrowUpRight className="w-4 h-4 text-green-400" />
+                  ) : (
+                    <ArrowDownRight className="w-4 h-4 text-red-400" />
+                  )}
+                  <span className={`text-sm font-medium ${position.isProfit ? 'text-green-400' : 'text-red-400'}`}>
+                    ${Math.abs(position.pnl).toFixed(2)} ({position.pnlPercent}%)
+                  </span>
+                </div>
               </div>
             </div>
           </div>
+          
+          <Button 
+            className="backdrop-blur-md bg-white/5 hover:bg-white/10 border border-white/20 font-bold transition-all duration-300 text-white"
+            onClick={() => {/* Handle hedging ideas */}}
+          >
+            💡 Hedging Ideas
+          </Button>
         </div>
 
         {/* Full Width Chart Section with Glassmorphism */}
         <Card className="backdrop-blur-md bg-white/5 border border-white/20 p-6 mb-6 shadow-2xl">
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <div className="text-3xl font-bold mb-2 bg-gradient-to-r from-blue-400 via-purple-500 to-green-400 bg-clip-text text-transparent">
-                ${position.currentPrice.toLocaleString()}
-              </div>
-              <div className="flex items-center gap-2">
-                {position.isProfit ? (
-                  <ArrowUpRight className="w-4 h-4 text-green-400" />
-                ) : (
-                  <ArrowDownRight className="w-4 h-4 text-red-400" />
-                )}
-                <span className={`text-sm font-medium ${position.isProfit ? 'text-green-400' : 'text-red-400'}`}>
-                  ${Math.abs(position.pnl).toFixed(2)} ({position.pnlPercent}%)
-                </span>
-              </div>
-            </div>
-            <Button 
-              className="bg-gradient-to-r from-purple-600/80 to-pink-600/80 hover:from-purple-700/80 hover:to-pink-700/80 font-bold backdrop-blur-md border border-white/20 transition-all duration-300"
-              onClick={() => {/* Handle hedging ideas */}}
-            >
-              💡 Hedging Ideas
-            </Button>
-          </div>
           <DetailedPositionChart 
             symbol={position.symbol}
             entryPrice={position.entryPrice}
@@ -215,7 +221,7 @@ const Position = () => {
               return (
                 <Button
                   key={index}
-                  className={`${order.color} text-white font-bold py-3 px-4 rounded-lg transition-all duration-200 flex items-center gap-2 backdrop-blur-md border border-white/20 hover:border-white/30 shadow-lg`}
+                  className={`${order.color} font-bold py-3 px-4 rounded-lg transition-all duration-200 flex items-center gap-2 shadow-lg`}
                   onClick={() => {/* Handle order type */}}
                 >
                   <IconComponent className="w-4 h-4" />
