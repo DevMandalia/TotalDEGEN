@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Search, Bell, User, Clover, Home, TrendingUp, BarChart3, Settings } from "lucide-react";
+import { Search, Bell, User, Lightning, Home, TrendingUp, BarChart3, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -41,7 +41,7 @@ const TradingNavigation = ({ onAccountClick }: TradingNavigationProps) => {
               onClick={onAccountClick}
               className="w-8 h-8 bg-green-500 rounded-full hover:bg-green-600 flex items-center justify-center"
             >
-              <Clover className="w-4 h-4 text-black" />
+              <Lightning className="w-4 h-4 text-black" />
             </Button>
             <div className="flex items-center gap-3">
               <span className="font-semibold text-lg">Total DEGEN</span>
