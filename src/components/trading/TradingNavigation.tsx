@@ -32,16 +32,27 @@ const TradingNavigation = ({ onAccountClick, onSettingsClick }: TradingNavigatio
 
   const isConnected = connectionStatus === "Live" || connectionStatus === "Testnet" || connectionStatus === "Paper Trading";
 
-  const handleNotificationClick = () => {
+  const handleNotificationClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     console.log("Notifications clicked");
     // Add notification functionality here
   };
 
-  const handleSettingsClick = () => {
+  const handleSettingsClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     console.log("Settings clicked");
     if (onSettingsClick) {
       onSettingsClick();
     }
+  };
+
+  const handleNavClick = (path: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log(`Navigating to ${path}`);
+    navigate(path);
   };
 
   return (
@@ -72,22 +83,19 @@ const TradingNavigation = ({ onAccountClick, onSettingsClick }: TradingNavigatio
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
               return (
-                <Button
+                <button
                   key={item.name}
-                  variant="ghost"
-                  onClick={() => {
-                    console.log(`Navigating to ${item.path}`);
-                    navigate(item.path);
-                  }}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm transition-colors cursor-pointer ${
+                  onClick={(e) => handleNavClick(item.path, e)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm transition-colors cursor-pointer border-none bg-transparent ${
                     isActive 
                       ? "bg-green-600 text-white hover:bg-green-700" 
                       : "text-gray-400 hover:text-white hover:bg-gray-800"
                   }`}
+                  style={{ pointerEvents: 'auto' }}
                 >
                   <Icon className="w-4 h-4" />
                   <span>{item.name}</span>
-                </Button>
+                </button>
               );
             })}
           </div>
@@ -102,23 +110,21 @@ const TradingNavigation = ({ onAccountClick, onSettingsClick }: TradingNavigatio
             />
           </div>
           
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="hover:bg-gray-800 text-gray-400 cursor-pointer"
+          <button 
+            className="hover:bg-gray-800 text-gray-400 cursor-pointer p-2 rounded-md border-none bg-transparent"
             onClick={handleNotificationClick}
+            style={{ pointerEvents: 'auto' }}
           >
             <Bell className="w-5 h-5" />
-          </Button>
+          </button>
           
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="hover:bg-gray-800 text-gray-400 cursor-pointer"
+          <button 
+            className="hover:bg-gray-800 text-gray-400 cursor-pointer p-2 rounded-md border-none bg-transparent"
             onClick={handleSettingsClick}
+            style={{ pointerEvents: 'auto' }}
           >
             <Settings className="w-5 h-5" />
-          </Button>
+          </button>
         </div>
       </div>
     </nav>
