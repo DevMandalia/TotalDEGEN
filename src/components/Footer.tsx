@@ -8,7 +8,7 @@ const Footer = () => {
         <div className="glass glass-hover rounded-xl p-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="space-y-4">
-              <h3 className="font-medium text-lg">Total DEGEN</h3>
+              <h3 className="font-medium text-lg">TotalDEGEN</h3>
               <p className="text-sm text-muted-foreground">
                 Empowering traders with advanced crypto trading solutions.
               </p>
@@ -73,7 +73,7 @@ const Footer = () => {
 
           <div className="mt-8 pt-8 border-t border-white/10">
             <p className="text-sm text-muted-foreground text-center">
-              © {new Date().getFullYear()} Total DEGEN. All rights reserved. Lefts too.
+              © {new Date().getFullYear()} TotalDEGEN. All rights reserved. Lefts too.
             </p>
           </div>
         </div>

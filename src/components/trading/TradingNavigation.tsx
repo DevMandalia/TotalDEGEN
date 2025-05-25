@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Search, Bell, User, Zap, Home, TrendingUp, BarChart3, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,7 +12,7 @@ interface TradingNavigationProps {
 const TradingNavigation = ({ onAccountClick, onSettingsClick }: TradingNavigationProps) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [connectionStatus] = useState("Live"); // Can be "Live", "Testnet", or "Paper Trading"
+  const [connectionStatus] = useState("Live");
 
   const navItems = [
     { name: "Dashboard", path: "/trading", icon: Home },
