@@ -56,7 +56,7 @@ const Index = () => {
             className="text-lg md:text-xl text-gray-200 mb-8 max-w-2xl text-left"
           >
             Leveraging basic features and institutional-grade order control, we believe degens can come out way WAY ahead.{" "}
-            <span className="text-white">Inhale. Channel your inner degen. Exhale. </span>
+            <span className="text-white">\n Inhale. Channel your inner degen. Exhale. </span>
           </motion.p>
           
           <motion.div
