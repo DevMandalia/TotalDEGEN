@@ -178,13 +178,13 @@ const ConditionalTrading = () => {
           <ToggleGroup type="single" value={entryConnector} onValueChange={setEntryConnector}>
             <ToggleGroupItem 
               value="and" 
-              className="backdrop-blur-sm bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-400/30 text-emerald-300 data-[state=on]:bg-gradient-to-r data-[state=on]:from-emerald-500/40 data-[state=on]:to-teal-500/40 data-[state=on]:border-emerald-400/50 data-[state=on]:text-emerald-200 transition-all duration-300"
+              className="backdrop-blur-sm bg-gradient-to-r from-emerald-500/30 to-teal-500/30 border border-emerald-400/50 text-emerald-200 data-[state=on]:bg-gradient-to-r data-[state=on]:from-emerald-500/60 data-[state=on]:to-teal-500/60 data-[state=on]:border-emerald-400/80 data-[state=on]:text-emerald-100 transition-all duration-300 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:bg-gradient-to-r hover:from-emerald-500/40 hover:to-teal-500/40"
             >
               AND
             </ToggleGroupItem>
             <ToggleGroupItem 
               value="or" 
-              className="backdrop-blur-sm bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-400/30 text-amber-300 data-[state=on]:bg-gradient-to-r data-[state=on]:from-amber-500/40 data-[state=on]:to-orange-500/40 data-[state=on]:border-amber-400/50 data-[state=on]:text-amber-200 transition-all duration-300"
+              className="backdrop-blur-sm bg-gradient-to-r from-amber-500/30 to-orange-500/30 border border-amber-400/50 text-amber-200 data-[state=on]:bg-gradient-to-r data-[state=on]:from-amber-500/60 data-[state=on]:to-orange-500/60 data-[state=on]:border-amber-400/80 data-[state=on]:text-amber-100 transition-all duration-300 shadow-lg shadow-amber-500/20 hover:shadow-amber-500/40 hover:bg-gradient-to-r hover:from-amber-500/40 hover:to-orange-500/40"
             >
               OR
             </ToggleGroupItem>
@@ -249,7 +249,7 @@ const ConditionalTrading = () => {
               variant="ghost"
               onClick={() => addCondition('entry')}
               disabled={entryConditions.length >= 8}
-              className="backdrop-blur-sm bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-400/30 text-blue-200 hover:bg-gradient-to-r hover:from-blue-500/30 hover:to-purple-500/30 hover:border-blue-400/50 hover:text-blue-100 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="backdrop-blur-sm bg-gradient-to-r from-blue-500/30 to-purple-500/30 border border-blue-400/50 text-blue-200 hover:bg-gradient-to-r hover:from-blue-500/50 hover:to-purple-500/50 hover:border-blue-400/80 hover:text-blue-100 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40"
             >
               <Plus className="w-4 h-4 mr-2" />
               Add New
@@ -265,13 +265,13 @@ const ConditionalTrading = () => {
           <ToggleGroup type="single" value={exitConnector} onValueChange={setExitConnector}>
             <ToggleGroupItem 
               value="and" 
-              className="backdrop-blur-sm bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-400/30 text-emerald-300 data-[state=on]:bg-gradient-to-r data-[state=on]:from-emerald-500/40 data-[state=on]:to-teal-500/40 data-[state=on]:border-emerald-400/50 data-[state=on]:text-emerald-200 transition-all duration-300"
+              className="backdrop-blur-sm bg-gradient-to-r from-emerald-500/30 to-teal-500/30 border border-emerald-400/50 text-emerald-200 data-[state=on]:bg-gradient-to-r data-[state=on]:from-emerald-500/60 data-[state=on]:to-teal-500/60 data-[state=on]:border-emerald-400/80 data-[state=on]:text-emerald-100 transition-all duration-300 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:bg-gradient-to-r hover:from-emerald-500/40 hover:to-teal-500/40"
             >
               AND
             </ToggleGroupItem>
             <ToggleGroupItem 
               value="or" 
-              className="backdrop-blur-sm bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-400/30 text-amber-300 data-[state=on]:bg-gradient-to-r data-[state=on]:from-amber-500/40 data-[state=on]:to-orange-500/40 data-[state=on]:border-amber-400/50 data-[state=on]:text-amber-200 transition-all duration-300"
+              className="backdrop-blur-sm bg-gradient-to-r from-amber-500/30 to-orange-500/30 border border-amber-400/50 text-amber-200 data-[state=on]:bg-gradient-to-r data-[state=on]:from-amber-500/60 data-[state=on]:to-orange-500/60 data-[state=on]:border-amber-400/80 data-[state=on]:text-amber-100 transition-all duration-300 shadow-lg shadow-amber-500/20 hover:shadow-amber-500/40 hover:bg-gradient-to-r hover:from-amber-500/40 hover:to-orange-500/40"
             >
               OR
             </ToggleGroupItem>
@@ -336,7 +336,7 @@ const ConditionalTrading = () => {
               variant="ghost"
               onClick={() => addCondition('exit')}
               disabled={exitConditions.length >= 8}
-              className="backdrop-blur-sm bg-gradient-to-r from-pink-500/20 to-rose-500/20 border border-pink-400/30 text-pink-200 hover:bg-gradient-to-r hover:from-pink-500/30 hover:to-rose-500/30 hover:border-pink-400/50 hover:text-pink-100 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="backdrop-blur-sm bg-gradient-to-r from-pink-500/30 to-rose-500/30 border border-pink-400/50 text-pink-200 hover:bg-gradient-to-r hover:from-pink-500/50 hover:to-rose-500/50 hover:border-pink-400/80 hover:text-pink-100 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-pink-500/20 hover:shadow-pink-500/40"
             >
               <Plus className="w-4 h-4 mr-2" />
               Add New
@@ -403,7 +403,7 @@ const ConditionalTrading = () => {
             variant="ghost"
             onClick={addAction}
             disabled={actions.length >= 4}
-            className="backdrop-blur-sm bg-gradient-to-r from-indigo-500/20 to-cyan-500/20 border border-indigo-400/30 text-indigo-200 hover:bg-gradient-to-r hover:from-indigo-500/30 hover:to-cyan-500/30 hover:border-indigo-400/50 hover:text-indigo-100 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="backdrop-blur-sm bg-gradient-to-r from-indigo-500/30 to-cyan-500/30 border border-indigo-400/50 text-indigo-200 hover:bg-gradient-to-r hover:from-indigo-500/50 hover:to-cyan-500/50 hover:border-indigo-400/80 hover:text-indigo-100 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40"
           >
             <Plus className="w-4 h-4 mr-2" />
             Add Action
