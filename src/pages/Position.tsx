@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { ArrowLeft, ArrowUpRight, ArrowDownRight, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,9 +6,11 @@ import { useNavigate } from "react-router-dom";
 import TradingNavigation from "@/components/trading/TradingNavigation";
 import PositionChart from "@/components/trading/PositionChart";
 import OrderBook from "@/components/trading/OrderBook";
+import ExchangeConnectionModal from "@/components/trading/ExchangeConnectionModal";
 
 const Position = () => {
   const navigate = useNavigate();
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [position] = useState({
     symbol: "BTC",
     name: "Bitcoin",
@@ -25,7 +26,7 @@ const Position = () => {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <TradingNavigation />
+      <TradingNavigation onAccountClick={() => setIsModalOpen(true)} />
       
       <div className="p-6">
         {/* Header */}
@@ -112,6 +113,11 @@ const Position = () => {
           </div>
         </div>
       </div>
+
+      <ExchangeConnectionModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+      />
     </div>
   );
 };

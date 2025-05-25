@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { ArrowLeft, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,14 +7,16 @@ import { useNavigate } from "react-router-dom";
 import TradingNavigation from "@/components/trading/TradingNavigation";
 import CorrelationMatrix from "@/components/trading/CorrelationMatrix";
 import SelectedCryptoList from "@/components/trading/SelectedCryptoList";
+import ExchangeConnectionModal from "@/components/trading/ExchangeConnectionModal";
 
 const Correlation = () => {
   const navigate = useNavigate();
   const [timeframe, setTimeframe] = useState("30d");
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <TradingNavigation />
+      <TradingNavigation onAccountClick={() => setIsModalOpen(true)} />
       
       <div className="p-6">
         {/* Header */}
@@ -62,6 +63,11 @@ const Correlation = () => {
           <CorrelationMatrix timeframe={timeframe} />
         </Card>
       </div>
+
+      <ExchangeConnectionModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+      />
     </div>
   );
 };
