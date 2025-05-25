@@ -99,7 +99,7 @@ export const PricingSection = () => {
         <PricingTier
           name="Top Dog"
           basePrice={199}
-          description="For ex-over-achievers who now have way too much money to lose but it's the only thing that thrills you."
+          description="For ex-over-achievers who now have way too much money to lose but it's the only thing that thrills you"
           features={[
             "All features available",
             "Unlimited losing potential",
