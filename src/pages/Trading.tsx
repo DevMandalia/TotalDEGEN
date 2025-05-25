@@ -1,18 +1,18 @@
 
 import { useState } from "react";
-import { ArrowUpRight, ArrowDownRight, Search, Bell, User, Menu } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight, Settings, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import TradingNavigation from "@/components/trading/TradingNavigation";
-import PortfolioChart from "@/components/trading/PortfolioChart";
-import WatchList from "@/components/trading/WatchList";
-import RecentOrders from "@/components/trading/RecentOrders";
+import RobinhoodChart from "@/components/trading/RobinhoodChart";
+import LiveMarketData from "@/components/trading/LiveMarketData";
+import OpenPositions from "@/components/trading/OpenPositions";
+import RecentTrades from "@/components/trading/RecentTrades";
 
 const Trading = () => {
-  const [portfolioValue] = useState(127456.78);
-  const [dayChange] = useState(2847.92);
-  const [dayChangePercent] = useState(2.29);
+  const [portfolioValue] = useState(8866.42);
+  const [dayChange] = useState(116.74);
+  const [dayChangePercent] = useState(1.34);
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -21,43 +21,53 @@ const Trading = () => {
       <div className="flex">
         {/* Main Content */}
         <div className="flex-1 p-6">
-          {/* Header */}
-          <div className="flex justify-between items-center mb-8">
+          {/* Portfolio Header */}
+          <div className="flex justify-between items-start mb-6">
             <div>
-              <h1 className="text-4xl font-light">${portfolioValue.toLocaleString()}</h1>
-              <div className="flex items-center gap-2 mt-1">
+              <div className="flex items-center gap-3 mb-2">
+                <h1 className="text-sm text-gray-400">Crypto Portfolio</h1>
+                <Button variant="ghost" size="icon" className="h-6 w-6">
+                  <MoreHorizontal className="w-4 h-4" />
+                </Button>
+              </div>
+              <div className="text-3xl font-light mb-1">${portfolioValue.toLocaleString()}</div>
+              <div className="flex items-center gap-2">
                 {dayChange >= 0 ? (
                   <ArrowUpRight className="w-4 h-4 text-green-500" />
                 ) : (
                   <ArrowDownRight className="w-4 h-4 text-red-500" />
                 )}
                 <span className={`text-sm ${dayChange >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                  ${Math.abs(dayChange).toLocaleString()} ({dayChangePercent}%) Today
+                  ${Math.abs(dayChange).toFixed(2)} ({dayChangePercent}%) Past month
                 </span>
               </div>
             </div>
-            <div className="flex items-center gap-4">
-              <Button variant="outline" className="bg-green-600 hover:bg-green-700 border-green-600">
-                Deposit
-              </Button>
-              <Button variant="outline" className="border-gray-600">
-                Transfer
-              </Button>
+            <Button variant="outline" className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700">
+              <Settings className="w-4 h-4 mr-2" />
+              Settings
+            </Button>
+          </div>
+
+          {/* Chart and Market Data Row */}
+          <div className="grid grid-cols-3 gap-6 mb-6">
+            {/* Portfolio Chart */}
+            <div className="col-span-2">
+              <RobinhoodChart />
+            </div>
+            
+            {/* Live Market Data */}
+            <div>
+              <LiveMarketData />
             </div>
           </div>
 
-          {/* Portfolio Chart */}
-          <Card className="bg-gray-900 border-gray-800 mb-6">
-            <PortfolioChart />
-          </Card>
+          {/* Open Positions */}
+          <div className="mb-6">
+            <OpenPositions />
+          </div>
 
-          {/* Recent Orders */}
-          <RecentOrders />
-        </div>
-
-        {/* Right Sidebar */}
-        <div className="w-80 p-6 border-l border-gray-800">
-          <WatchList />
+          {/* Recent Trades */}
+          <RecentTrades />
         </div>
       </div>
     </div>
