@@ -1,3 +1,4 @@
+
 import { motion } from "framer-motion";
 import { ArrowRight, Command } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -34,7 +35,7 @@ const Index = () => {
         >
           <span className="text-sm font-medium">
             <Command className="w-4 h-4 inline-block mr-2" />
-            Next-gen crypto trading platform
+            The platform on its way to bankruptcy
           </span>
         </motion.div>
         
@@ -66,7 +67,7 @@ const Index = () => {
             className="flex flex-col sm:flex-row gap-4 items-start"
           >
             <Button size="lg" className="button-gradient">
-              Start Trading Now
+              Let's Gamble
             </Button>
             <Button size="lg" variant="link" className="text-white">
               View Markets <ArrowRight className="ml-2 w-4 h-4" />

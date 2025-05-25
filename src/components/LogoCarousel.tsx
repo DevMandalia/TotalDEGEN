@@ -1,12 +1,14 @@
+
 import { motion } from "framer-motion";
 
 const LogoCarousel = () => {
+  // Using placeholder images for the legendary failures
   const logos = [
-    "/lovable-uploads/5830bd79-3511-41dc-af6c-8db32d91fc2c.png",
-    "/lovable-uploads/bb50362c-6879-4868-bbc9-c6e051fd8d7d.png",
-    "/lovable-uploads/1e2a48dc-059b-4919-a1ed-44685d771a32.png",
-    "/lovable-uploads/bf56a0c6-48e4-49f7-b286-8e3fda9a3385.png",
-    "/lovable-uploads/7cc724d4-3e14-4e7c-9e7a-8d613fde54d0.png",
+    "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=200&h=80&fit=crop&crop=center", // FTX placeholder
+    "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=200&h=80&fit=crop&crop=center", // Mt. Gox placeholder
+    "https://images.unsplash.com/photo-1518770660439-4636190af475?w=200&h=80&fit=crop&crop=center", // Enron placeholder
+    "https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7?w=200&h=80&fit=crop&crop=center", // Cambridge Analytica placeholder
+    "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=200&h=80&fit=crop&crop=center", // Another failure placeholder
   ];
 
   const extendedLogos = [...logos, ...logos, ...logos];
@@ -39,8 +41,8 @@ const LogoCarousel = () => {
           <motion.img
             key={`logo-${index}`}
             src={logo}
-            alt={`Partner logo ${index + 1}`}
-            className="h-8 object-contain"
+            alt={`Bankrupt company logo ${index + 1}`}
+            className="h-8 object-contain grayscale opacity-60"
             initial={{ opacity: 0.5 }}
             whileHover={{ 
               opacity: 1,
