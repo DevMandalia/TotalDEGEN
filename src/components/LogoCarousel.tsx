@@ -2,13 +2,13 @@
 import { motion } from "framer-motion";
 
 const LogoCarousel = () => {
-  // Using placeholder images for the legendary failures
+  // Using different placeholder images for the legendary failures
   const logos = [
-    "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=200&h=80&fit=crop&crop=center", // FTX placeholder
-    "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=200&h=80&fit=crop&crop=center", // Mt. Gox placeholder
-    "https://images.unsplash.com/photo-1518770660439-4636190af475?w=200&h=80&fit=crop&crop=center", // Enron placeholder
-    "https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7?w=200&h=80&fit=crop&crop=center", // Cambridge Analytica placeholder
-    "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=200&h=80&fit=crop&crop=center", // Another failure placeholder
+    "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=200&h=80&fit=crop&crop=center", // Tech company placeholder
+    "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=200&h=80&fit=crop&crop=center", // Data/analytics placeholder
+    "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=200&h=80&fit=crop&crop=center", // Energy/corporate placeholder
+    "https://images.unsplash.com/photo-1526628953301-3e589a6a8b74?w=200&h=80&fit=crop&crop=center", // Crypto/blockchain placeholder
+    "https://images.unsplash.com/photo-1563986768494-4dee2763ff3f?w=200&h=80&fit=crop&crop=center", // Finance placeholder
   ];
 
   const extendedLogos = [...logos, ...logos, ...logos];
