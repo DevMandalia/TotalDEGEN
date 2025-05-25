@@ -8,6 +8,7 @@ import TradingNavigation from "@/components/trading/TradingNavigation";
 import DetailedPositionChart from "@/components/trading/DetailedPositionChart";
 import ExchangeConnectionModal from "@/components/trading/ExchangeConnectionModal";
 import SettingsModal from "@/components/trading/SettingsModal";
+import ConditionalTrading from "@/components/trading/ConditionalTrading";
 import AnimatedBackground from "@/components/ui/animated-background";
 
 const Position = () => {
@@ -142,7 +143,7 @@ const Position = () => {
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           {/* Risk Management with Glassmorphism */}
           <div className="lg:col-span-2">
             <Card className="backdrop-blur-md bg-white/5 border border-white/20 p-6 shadow-2xl">
@@ -207,8 +208,13 @@ const Position = () => {
           </Card>
         </div>
 
+        {/* Conditional Trading Strategy */}
+        <div className="mb-6">
+          <ConditionalTrading />
+        </div>
+
         {/* Order Types Panel with Enhanced Glassmorphism */}
-        <Card className="backdrop-blur-md bg-white/5 border border-white/20 p-6 mt-6 shadow-2xl">
+        <Card className="backdrop-blur-md bg-white/5 border border-white/20 p-6 shadow-2xl">
           <h3 className="text-lg font-bold text-white mb-4 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
             Order Types
           </h3>
