@@ -116,6 +116,22 @@ const Index = () => {
         <TestimonialsSection />
       </div>
 
+      {/* One More Thing Section */}
+      <section className="container px-4 py-20 relative bg-black">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="text-center"
+        >
+          <h2 className="text-5xl font-normal mb-8">One more thing</h2>
+          <p className="text-lg md:text-xl text-gray-200 max-w-3xl mx-auto">
+            Anyone can own govern, secure, TotalDEGEN through TOGE, the platform's native token (launching soon)
+          </p>
+        </motion.div>
+      </section>
+
       {/* CTA Section */}
       <section className="container px-4 py-20 relative bg-black">
         <div 
