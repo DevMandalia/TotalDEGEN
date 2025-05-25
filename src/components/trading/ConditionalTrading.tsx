@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -174,7 +173,9 @@ const ConditionalTrading = () => {
       {/* Entry Conditions */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
-          <h4 className="text-white font-medium">If</h4>
+          <h4 className="text-xl font-bold bg-gradient-to-r from-blue-400 via-purple-500 to-green-400 bg-clip-text text-transparent drop-shadow-lg">
+            If
+          </h4>
           <ToggleGroup type="single" value={entryConnector} onValueChange={setEntryConnector}>
             <ToggleGroupItem 
               value="and" 
@@ -261,7 +262,9 @@ const ConditionalTrading = () => {
       {/* Exit Conditions */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
-          <h4 className="text-white font-medium">Else</h4>
+          <h4 className="text-xl font-bold bg-gradient-to-r from-pink-400 via-red-500 to-orange-400 bg-clip-text text-transparent drop-shadow-lg">
+            Else
+          </h4>
           <ToggleGroup type="single" value={exitConnector} onValueChange={setExitConnector}>
             <ToggleGroupItem 
               value="and" 
@@ -347,7 +350,9 @@ const ConditionalTrading = () => {
 
       {/* Actions */}
       <div className="mb-6">
-        <h4 className="text-white font-medium mb-4">Actions to Execute</h4>
+        <h4 className="text-xl font-bold mb-4 bg-gradient-to-r from-purple-400 via-indigo-500 to-cyan-400 bg-clip-text text-transparent drop-shadow-lg">
+          Actions to Execute
+        </h4>
         
         <div className="space-y-3">
           {actions.map((action) => (
