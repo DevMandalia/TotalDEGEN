@@ -1,17 +1,19 @@
+
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CardSpotlight } from "./CardSpotlight";
+import { DynamicPrice } from "./DynamicPrice";
 
 const PricingTier = ({
   name,
-  price,
+  basePrice,
   description,
   features,
   isPopular,
 }: {
   name: string;
-  price: string;
+  basePrice: number;
   description: string;
   features: string[];
   isPopular?: boolean;
@@ -20,13 +22,13 @@ const PricingTier = ({
     <div className="relative h-full p-6 flex flex-col">
       {isPopular && (
         <span className="text-xs font-medium bg-primary/10 text-primary rounded-full px-3 py-1 w-fit mb-4">
-          Most Popular
+          Most Delusional
         </span>
       )}
       <h3 className="text-xl font-medium mb-2">{name}</h3>
       <div className="mb-4">
-        <span className="text-4xl font-bold">{price}</span>
-        {price !== "Custom" && <span className="text-gray-400">/month</span>}
+        <DynamicPrice basePrice={basePrice} tier={name} />
+        {name !== "Basic Trader" && <span className="text-gray-400">/month</span>}
       </div>
       <p className="text-gray-400 mb-6">{description}</p>
       <ul className="space-y-3 mb-8 flex-grow">
@@ -38,7 +40,7 @@ const PricingTier = ({
         ))}
       </ul>
       <Button className="button-gradient w-full">
-        Start Trading
+        Let's Gamble
       </Button>
     </div>
   </CardSpotlight>
@@ -55,7 +57,7 @@ export const PricingSection = () => {
           className="text-5xl md:text-6xl font-normal mb-6"
         >
           Choose Your{" "}
-          <span className="text-gradient font-medium">Trading Plan</span>
+          <span className="text-gradient font-medium">Destruction Plan</span>
         </motion.h2>
         <motion.p
           initial={{ opacity: 0, y: 20 }}
@@ -63,46 +65,49 @@ export const PricingSection = () => {
           transition={{ delay: 0.1, duration: 0.5 }}
           className="text-lg text-gray-400"
         >
-          Select the perfect trading plan with advanced features and competitive fees
+          Pick your poison with our totally reasonable pricing that changes faster than crypto markets
         </motion.p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
         <PricingTier
           name="Basic Trader"
-          price="$0"
-          description="Perfect for beginners starting their crypto journey"
+          basePrice={0}
+          description="For beginners who want to lose money slowly and responsibly"
           features={[
-            "Basic spot trading",
-            "Market & limit orders",
-            "Basic market analysis",
-            "Email support"
+            "All features available",
+            "Basic confusion included",
+            "Simple ways to lose money",
+            "Email support (if we remember)",
+            "Access to our meme collection"
           ]}
         />
         <PricingTier
-          name="Pro Trader"
-          price="$29"
-          description="Advanced features for serious traders"
+          name="Serious Gambler"
+          basePrice={29}
+          description="For those ready to lose money with style and sophistication"
           features={[
-            "Advanced trading tools",
-            "Margin trading up to 10x",
-            "Advanced technical analysis",
-            "Priority support",
-            "API access"
+            "All features available",
+            "Advanced losing techniques",
+            "Margin trading (lose faster!)",
+            "Priority panic support",
+            "API to automate your losses",
+            "Exclusive regret dashboard"
           ]}
           isPopular
         />
         <PricingTier
-          name="Institutional"
-          price="Custom"
-          description="Enterprise-grade solutions for institutions"
+          name="Top Dog"
+          basePrice={199}
+          description="For legends who want to lose institutional amounts of money"
           features={[
-            "Custom trading solutions",
-            "Unlimited trading volume",
-            "OTC desk access",
-            "Dedicated account manager",
-            "Custom API integration",
-            "24/7 priority support"
+            "All features available",
+            "Unlimited losing potential",
+            "OTC desk (Over The Counter crying)",
+            "Personal bankruptcy consultant",
+            "Custom API for maximum damage",
+            "24/7 therapy hotline",
+            "Complimentary tissues"
           ]}
         />
       </div>
