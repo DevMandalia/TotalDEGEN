@@ -21,7 +21,9 @@ const ConditionalTrading = () => {
   const {
     trueActions,
     falseActions,
-    addAction
+    addAction,
+    updateAction,
+    removeAction
   } = useActions();
 
   const {
@@ -60,6 +62,8 @@ const ConditionalTrading = () => {
           trueActions={trueActions}
           falseActions={falseActions}
           onAddAction={addAction}
+          onUpdateAction={updateAction}
+          onRemoveAction={removeAction}
         />
       </div>
 

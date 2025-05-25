@@ -4,11 +4,11 @@ import { Action } from "../types";
 
 export const useActions = () => {
   const [trueActions, setTrueActions] = useState<Action[]>([
-    { id: "1", orderType: "Market", side: "Buy", symbol: "BTC", quantity: "", timeInForce: "GTC" }
+    { id: "1", orderType: "Market", side: "Buy", symbol: "BTC", quantity: "1", timeInForce: "GTC" }
   ]);
   
   const [falseActions, setFalseActions] = useState<Action[]>([
-    { id: "1", orderType: "Market", side: "Sell", symbol: "BTC", quantity: "", timeInForce: "GTC" }
+    { id: "1", orderType: "Market", side: "Sell", symbol: "BTC", quantity: "1", timeInForce: "GTC" }
   ]);
 
   const addAction = (actionType: 'true' | 'false') => {
@@ -28,9 +28,26 @@ export const useActions = () => {
     }
   };
 
+  const updateAction = (id: string, field: string, value: string) => {
+    const updateActionInList = (actions: Action[]) =>
+      actions.map(action => 
+        action.id === id ? { ...action, [field]: value } : action
+      );
+
+    setTrueActions(prev => updateActionInList(prev));
+    setFalseActions(prev => updateActionInList(prev));
+  };
+
+  const removeAction = (id: string) => {
+    setTrueActions(prev => prev.filter(action => action.id !== id));
+    setFalseActions(prev => prev.filter(action => action.id !== id));
+  };
+
   return {
     trueActions,
     falseActions,
-    addAction
+    addAction,
+    updateAction,
+    removeAction
   };
 };
