@@ -1,6 +1,4 @@
-
 import { useState } from "react";
-import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -29,21 +27,11 @@ const Correlation = () => {
       <div className="p-6 relative z-10">
         {/* Header with Glassmorphism */}
         <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={() => navigate('/trading')}
-              className="hover:bg-white/10 border border-white/20 backdrop-blur-md bg-white/5 transition-all duration-300 shadow-lg"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 via-purple-500 to-green-400 bg-clip-text text-transparent drop-shadow-lg">
-                Crypto Correlation Matrix
-              </h1>
-              <p className="text-gray-400 text-lg">Analyze correlations between cryptocurrencies</p>
-            </div>
+          <div>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 via-purple-500 to-green-400 bg-clip-text text-transparent drop-shadow-lg">
+              Crypto Correlation Matrix
+            </h1>
+            <p className="text-gray-400 text-lg">Analyze correlations between cryptocurrencies</p>
           </div>
           
           <div className="flex items-center gap-4">

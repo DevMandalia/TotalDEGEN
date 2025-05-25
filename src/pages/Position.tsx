@@ -1,6 +1,5 @@
-
 import { useState } from "react";
-import { ArrowLeft, ArrowUpRight, ArrowDownRight, TrendingUp, Shield, Target } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight, TrendingUp, Shield, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -59,14 +58,6 @@ const Position = () => {
       <div className="p-6 relative z-10">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={() => navigate('/trading')}
-            className="hover:bg-white/10 border border-white/20 backdrop-blur-md bg-white/5 transition-all duration-300"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-gradient-to-r from-blue-500/80 to-purple-600/80 rounded-full flex items-center justify-center backdrop-blur-md border border-white/20">
               <span className="text-sm font-bold text-white">{position.symbol}</span>
