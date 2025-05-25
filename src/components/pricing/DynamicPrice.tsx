@@ -13,9 +13,8 @@ export const DynamicPrice = ({ basePrice, tier }: DynamicPriceProps) => {
     if (tier === "Basic Trader") return; // Keep $0 static
     
     const interval = setInterval(() => {
-      // Fluctuate between 80% and 120% of base price
-      const fluctuation = (Math.random() * 0.4 + 0.8);
-      const newPrice = Math.round(basePrice * fluctuation);
+      // Generate random number between -100 and 20,000
+      const newPrice = Math.floor(Math.random() * 20101) - 100; // 20101 to include 20,000, then subtract 100
       setPrice(newPrice);
     }, 1000); // Update every second
 
