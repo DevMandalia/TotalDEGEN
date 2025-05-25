@@ -55,7 +55,7 @@ const Index = () => {
             transition={{ delay: 0.4 }}
             className="text-lg md:text-xl text-gray-200 mb-8 max-w-2xl text-left"
           >
-            Leveraging advanced features, real-time analytics, and institutional-grade order control, we believe degens can come out way ahead.{" "}
+            Leveraging basic features and institutional-grade order control, we believe degens can come out way WAY ahead.{" "}
             <span className="text-white">Inhale. Channel your inner degen. Exhale. </span>
           </motion.p>
           
