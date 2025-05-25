@@ -46,66 +46,66 @@ const OpenPositions = () => {
   ];
 
   return (
-    <Card className="bg-black border border-gray-800 p-4">
-      <h3 className="text-sm text-gray-400 mb-4">Open Positions</h3>
+    <Card className="bg-gray-900 border border-gray-800 p-6 font-mono">
+      <h3 className="text-lg font-bold text-white mb-6 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">Open Positions</h3>
       
-      <div className="space-y-3">
+      <div className="space-y-4">
         {positions.map((position, index) => (
-          <div key={index} className="grid grid-cols-8 gap-4 py-3 border-b border-gray-800 last:border-b-0 text-sm">
+          <div key={index} className="grid grid-cols-8 gap-4 py-4 border-b border-gray-800 last:border-b-0 text-sm bg-black rounded-lg px-4">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center">
-                <span className="text-xs font-medium">{position.symbol}</span>
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                <span className="text-xs font-bold text-white">{position.symbol}</span>
               </div>
               <div>
-                <div className="font-medium">{position.symbol}</div>
-                <div className={`text-xs ${position.side === 'LONG' ? 'text-green-500' : 'text-red-500'}`}>
+                <div className="font-bold text-white">{position.symbol}</div>
+                <div className={`text-xs font-medium ${position.side === 'LONG' ? 'text-green-400' : 'text-red-400'}`}>
                   {position.side}
                 </div>
               </div>
             </div>
             
             <div>
-              <div className="text-gray-400 text-xs">Size</div>
-              <div>{position.size}</div>
+              <div className="text-gray-400 text-xs font-medium">Size</div>
+              <div className="text-white font-medium">{position.size}</div>
             </div>
             
             <div>
-              <div className="text-gray-400 text-xs">Entry</div>
-              <div>${position.entryPrice.toLocaleString()}</div>
+              <div className="text-gray-400 text-xs font-medium">Entry</div>
+              <div className="text-white font-medium">${position.entryPrice.toLocaleString()}</div>
             </div>
             
             <div>
-              <div className="text-gray-400 text-xs">Current</div>
-              <div>${position.currentPrice.toLocaleString()}</div>
+              <div className="text-gray-400 text-xs font-medium">Current</div>
+              <div className="text-white font-medium">${position.currentPrice.toLocaleString()}</div>
             </div>
             
             <div>
-              <div className="text-gray-400 text-xs">Leverage</div>
-              <div>{position.leverage}</div>
+              <div className="text-gray-400 text-xs font-medium">Leverage</div>
+              <div className="text-blue-400 font-bold">{position.leverage}</div>
             </div>
             
             <div>
-              <div className="text-gray-400 text-xs">Breakeven</div>
-              <div>${position.breakeven.toLocaleString()}</div>
+              <div className="text-gray-400 text-xs font-medium">Breakeven</div>
+              <div className="text-yellow-400 font-medium">${position.breakeven.toLocaleString()}</div>
             </div>
             
             <div>
-              <div className="text-gray-400 text-xs">Liquidation</div>
-              <div>${position.liquidation.toLocaleString()}</div>
+              <div className="text-gray-400 text-xs font-medium">Liquidation</div>
+              <div className="text-red-400 font-medium">${position.liquidation.toLocaleString()}</div>
             </div>
             
             <div className="text-right">
-              <div className={`flex items-center gap-1 justify-end ${
-                position.isProfit ? 'text-green-500' : 'text-red-500'
+              <div className={`flex items-center gap-1 justify-end font-bold ${
+                position.isProfit ? 'text-green-400' : 'text-red-400'
               }`}>
                 {position.isProfit ? (
-                  <ArrowUpRight className="w-3 h-3" />
+                  <ArrowUpRight className="w-4 h-4" />
                 ) : (
-                  <ArrowDownRight className="w-3 h-3" />
+                  <ArrowDownRight className="w-4 h-4" />
                 )}
                 <div>
-                  <div>${position.pnl.toFixed(2)}</div>
-                  <div className="text-xs">({position.pnlPercent}%)</div>
+                  <div className="text-lg">${position.pnl.toFixed(2)}</div>
+                  <div className="text-sm">({position.pnlPercent}%)</div>
                 </div>
               </div>
             </div>
