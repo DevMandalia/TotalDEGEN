@@ -41,11 +41,11 @@ const Index = () => {
         <div className="max-w-4xl relative z-10">
           <h1 className="text-5xl md:text-7xl font-normal mb-4 tracking-tight text-left">
             <span className="text-gray-200">
-              <TextGenerateEffect words="Crypto trading platform" />
+              <TextGenerateEffect words="Ultimate trading platform" />
             </span>
             <br />
             <span className="text-white font-medium">
-              <TextGenerateEffect words="for complete degenerates" />
+              <TextGenerateEffect words="dedicated to degens" />
             </span>
           </h1>
           
@@ -55,8 +55,8 @@ const Index = () => {
             transition={{ delay: 0.4 }}
             className="text-lg md:text-xl text-gray-200 mb-8 max-w-2xl text-left"
           >
-            Experience seamless cryptocurrency trading with advanced features, real-time analytics, and institutional-grade security.{" "}
-            <span className="text-white">Start trading in minutes.</span>
+            Leveraging advanced features, real-time analytics, and institutional-grade order control, we believe degens can come out way ahead.{" "}
+            <span className="text-white">Inhale. Channel your inner degen. Exhale. </span>
           </motion.p>
           
           <motion.div
