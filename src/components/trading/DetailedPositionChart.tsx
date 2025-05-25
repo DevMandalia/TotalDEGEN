@@ -120,7 +120,7 @@ const DetailedPositionChart = ({
                 stroke="#3B82F6" 
                 strokeDasharray="8 8" 
                 strokeWidth={2}
-                label={{ value: `Entry: $${entryPrice.toLocaleString()}`, position: "topRight", fill: "#3B82F6" }}
+                label={{ value: `Entry: $${entryPrice.toLocaleString()}`, position: "top", fill: "#3B82F6" }}
               />
               
               {/* Take Profit Line */}
@@ -129,7 +129,7 @@ const DetailedPositionChart = ({
                 stroke="#10B981" 
                 strokeDasharray="8 8" 
                 strokeWidth={2}
-                label={{ value: `TP: $${takeProfit.toLocaleString()}`, position: "topRight", fill: "#10B981" }}
+                label={{ value: `TP: $${takeProfit.toLocaleString()}`, position: "top", fill: "#10B981" }}
               />
               
               {/* Stop Loss Line */}
@@ -138,7 +138,7 @@ const DetailedPositionChart = ({
                 stroke="#EF4444" 
                 strokeDasharray="8 8" 
                 strokeWidth={2}
-                label={{ value: `SL: $${stopLoss.toLocaleString()}`, position: "topRight", fill: "#EF4444" }}
+                label={{ value: `SL: $${stopLoss.toLocaleString()}`, position: "top", fill: "#EF4444" }}
               />
               
               {/* Current Price Line */}
@@ -146,7 +146,7 @@ const DetailedPositionChart = ({
                 y={currentPrice} 
                 stroke="#F59E0B" 
                 strokeWidth={3}
-                label={{ value: `Current: $${currentPrice.toLocaleString()}`, position: "topRight", fill: "#F59E0B" }}
+                label={{ value: `Current: $${currentPrice.toLocaleString()}`, position: "top", fill: "#F59E0B" }}
               />
             </LineChart>
           </ResponsiveContainer>
