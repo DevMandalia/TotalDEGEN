@@ -207,12 +207,12 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
   const checkReadOnlyStatus = async (sessionToken: string) => {
     try {
       console.log('=== CHECKING API KEY PERMISSIONS ===');
-      console.log('Account endpoint:', `${API_BASE_URL}/exchange/account`);
+      console.log('Account endpoint:', `${API_BASE_URL}/api/exchange/account`);
       
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 15000);
       
-      const response = await fetch(`${API_BASE_URL}/exchange/account`, {
+      const response = await fetch(`${API_BASE_URL}/api/exchange/account`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${sessionToken}`,
@@ -316,7 +316,7 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout for connection test
 
-        const response = await fetch(`${API_BASE_URL}/exchange/connect`, {
+        const response = await fetch(`${API_BASE_URL}/api/exchange/connect`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
