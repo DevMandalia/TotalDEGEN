@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
 
 interface ExchangeConnectionModalProps {
   isOpen: boolean;
@@ -28,6 +29,9 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
   const [isLoading, setIsLoading] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'idle' | 'connecting' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState("");
+  const { toast } = useToast();
+
+  const API_BASE_URL = "https://3000-i55ier1dg4ii27z5jww1z-a32dc834.manus.computer";
 
   const connectionModes = [
     { value: "Live", label: "Live Trading", description: "Real money trading" },
@@ -35,51 +39,70 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
     { value: "Paper Trading", label: "Paper Trading", description: "Simulated trading" }
   ];
 
-  // Fetch supported exchanges from real API
+  // Test API health on component mount
   useEffect(() => {
     if (isOpen) {
-      fetchSupportedExchanges();
+      testApiHealth();
     }
   }, [isOpen]);
+
+  const testApiHealth = async () => {
+    try {
+      console.log('Testing API health...');
+      const response = await fetch(`${API_BASE_URL}/health`);
+      
+      if (!response.ok) {
+        throw new Error(`Health check failed with status: ${response.status}`);
+      }
+      
+      const healthData = await response.json();
+      console.log('API Health check result:', healthData);
+      
+      if (healthData.status === 'ok') {
+        fetchSupportedExchanges();
+      } else {
+        setErrorMessage('API is not healthy');
+      }
+    } catch (error) {
+      console.error('API Health check failed:', error);
+      setErrorMessage(`API connection failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
 
   const fetchSupportedExchanges = async () => {
     setIsLoading(true);
     setErrorMessage("");
     
     try {
-      console.log('Fetching supported exchanges from API...');
+      console.log('Fetching supported exchanges from backend API...');
       
-      const response = await fetch('https://api.coingecko.com/api/v3/exchanges/list');
+      const response = await fetch(`${API_BASE_URL}/api/exchanges`);
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`Failed to fetch exchanges: ${response.status}`);
       }
       
       const exchangeData = await response.json();
-      console.log('Received exchange data:', exchangeData);
+      console.log('Received exchange data from backend:', exchangeData);
       
-      // Map to our Exchange interface and filter for supported ones
-      const supportedExchangeIds = ['binance', 'coinbase-pro', 'kraken', 'bybit', 'okx', 'kucoin', 'huobi', 'ftx'];
-      const mappedExchanges: Exchange[] = exchangeData
-        .filter((ex: any) => supportedExchangeIds.includes(ex.id))
-        .map((ex: any) => ({
-          id: ex.id,
-          name: ex.name,
-          enabled: !['huobi', 'ftx'].includes(ex.id) // Disable some exchanges
-        }));
+      // Map to our Exchange interface
+      const mappedExchanges: Exchange[] = exchangeData.map((ex: any) => ({
+        id: ex.id || ex.name.toLowerCase(),
+        name: ex.name,
+        enabled: ex.enabled !== false // Default to enabled unless explicitly disabled
+      }));
       
       setExchanges(mappedExchanges);
       console.log('Loaded exchanges:', mappedExchanges);
       
     } catch (error) {
-      console.error('Error fetching exchanges:', error);
+      console.error('Error fetching exchanges from backend:', error);
       setErrorMessage(`Failed to fetch exchanges: ${error instanceof Error ? error.message : 'Unknown error'}`);
       
-      // Fallback to basic exchange list
+      // Fallback to basic exchange list based on your API
       setExchanges([
         { id: "binance", name: "Binance", enabled: true },
-        { id: "coinbase-pro", name: "Coinbase Pro", enabled: true },
-        { id: "kraken", name: "Kraken", enabled: true }
+        { id: "hyperliquid", name: "Hyperliquid", enabled: true }
       ]);
     } finally {
       setIsLoading(false);
@@ -99,59 +122,49 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
     try {
       console.log('Testing connection to:', selectedExchange);
       
-      let apiUrl = '';
-      let testEndpoint = '';
-      
-      // Determine API endpoint based on exchange and mode
-      switch (selectedExchange.toLowerCase()) {
-        case 'binance':
-          apiUrl = connectionMode === 'Testnet' ? 'https://testnet.binance.vision' : 'https://api.binance.com';
-          testEndpoint = '/api/v3/exchangeInfo';
-          break;
-        case 'coinbase pro':
-        case 'coinbase-pro':
-          apiUrl = connectionMode === 'Testnet' ? 'https://api-public.sandbox.pro.coinbase.com' : 'https://api.pro.coinbase.com';
-          testEndpoint = '/products';
-          break;
-        case 'kraken':
-          apiUrl = 'https://api.kraken.com';
-          testEndpoint = '/0/public/SystemStatus';
-          break;
-        default:
-          throw new Error(`Exchange ${selectedExchange} not yet supported for live connections`);
-      }
-
       if (connectionMode === "Paper Trading") {
         // For paper trading, just simulate success
         console.log('Paper trading mode - simulating connection');
         await new Promise(resolve => setTimeout(resolve, 1500));
         setConnectionStatus('success');
         console.log('Paper trading connection successful');
-      } else {
-        // For live/testnet, test actual API connection
-        console.log(`Testing ${connectionMode} connection to ${apiUrl}${testEndpoint}`);
         
-        const headers: Record<string, string> = {
-          'Content-Type': 'application/json',
+        toast({
+          title: "Connection Successful",
+          description: `Successfully connected to ${selectedExchange} in Paper Trading mode`,
+        });
+      } else {
+        // For live/testnet, test actual connection using your backend API
+        console.log(`Testing ${connectionMode} connection via backend API`);
+        
+        const requestBody = {
+          exchange: selectedExchange.toLowerCase(),
+          mode: connectionMode.toLowerCase(),
+          apiKey: apiKey,
+          secretKey: secretKey
         };
 
-        // Add authentication headers if provided
-        if (apiKey) {
-          headers['X-MBX-APIKEY'] = apiKey; // Binance style
-        }
-
-        const response = await fetch(`${apiUrl}${testEndpoint}`, {
-          method: 'GET',
-          headers,
+        const response = await fetch(`${API_BASE_URL}/api/exchange/connect`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestBody)
         });
 
         if (!response.ok) {
-          throw new Error(`Connection failed with status: ${response.status}`);
+          const errorData = await response.json().catch(() => ({ error: 'Connection failed' }));
+          throw new Error(errorData.error || `Connection failed with status: ${response.status}`);
         }
 
-        const data = await response.json();
-        console.log('Connection test successful:', data);
+        const connectionData = await response.json();
+        console.log('Connection test successful:', connectionData);
         setConnectionStatus('success');
+        
+        toast({
+          title: "Connection Successful",
+          description: `Successfully connected to ${selectedExchange} in ${connectionMode} mode`,
+        });
       }
       
       // Clear form after successful connection
@@ -165,7 +178,14 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
     } catch (error) {
       console.error('Connection error:', error);
       setConnectionStatus('error');
-      setErrorMessage(error instanceof Error ? error.message : 'Connection failed');
+      const errorMsg = error instanceof Error ? error.message : 'Connection failed';
+      setErrorMessage(errorMsg);
+      
+      toast({
+        title: "Connection Failed",
+        description: errorMsg,
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
