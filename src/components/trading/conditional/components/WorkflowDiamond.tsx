@@ -6,13 +6,21 @@ const WorkflowDiamond = () => {
         <span className="text-xl font-bold text-white -rotate-45">IF</span>
       </div>
       
-      {/* Extended Connecting Lines - reaching all the way to Actions rectangles */}
-      <div className="absolute top-1/2 -right-20 w-96 h-0.5 bg-gradient-to-r from-green-400 to-green-400/30"></div>
-      <div className="absolute top-1/2 -left-20 w-96 h-0.5 bg-gradient-to-l from-red-400 to-red-400/30"></div>
+      {/* Horizontal lines extending from diamond sides */}
+      <div className="absolute top-1/2 -right-0 w-80 h-0.5 bg-gray-400 transform -translate-y-0.5"></div>
+      <div className="absolute top-1/2 -left-0 w-80 h-0.5 bg-gray-400 transform -translate-y-0.5"></div>
+      
+      {/* Vertical lines going down */}
+      <div className="absolute top-1/2 right-80 w-0.5 h-32 bg-gray-400"></div>
+      <div className="absolute top-1/2 left-80 w-0.5 h-32 bg-gray-400"></div>
+      
+      {/* Arrow heads pointing down */}
+      <div className="absolute top-1/2 right-80 mt-32 w-0 h-0 border-l-4 border-r-4 border-t-8 border-l-transparent border-r-transparent border-t-gray-400 transform -translate-x-0.5"></div>
+      <div className="absolute top-1/2 left-80 mt-32 w-0 h-0 border-l-4 border-r-4 border-t-8 border-l-transparent border-r-transparent border-t-gray-400 transform -translate-x-0.5"></div>
       
       {/* TRUE/FALSE Labels */}
-      <div className="absolute top-1/2 -right-32 transform -translate-y-1/2 text-green-400 font-bold text-sm">TRUE</div>
-      <div className="absolute top-1/2 -left-32 transform -translate-y-1/2 text-red-400 font-bold text-sm">FALSE</div>
+      <div className="absolute top-1/2 right-64 transform -translate-y-1/2 text-green-400 font-bold text-sm">TRUE</div>
+      <div className="absolute top-1/2 left-64 transform -translate-y-1/2 text-red-400 font-bold text-sm">FALSE</div>
     </div>
   );
 };
