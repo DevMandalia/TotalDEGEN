@@ -17,18 +17,6 @@ interface Exchange {
   enabled: boolean;
 }
 
-// Mock data for supported exchanges
-const MOCK_EXCHANGES: Exchange[] = [
-  { id: "binance", name: "Binance", enabled: true },
-  { id: "coinbasepro", name: "Coinbase Pro", enabled: true },
-  { id: "kraken", name: "Kraken", enabled: true },
-  { id: "bybit", name: "Bybit", enabled: true },
-  { id: "okx", name: "OKX", enabled: true },
-  { id: "kucoin", name: "KuCoin", enabled: true },
-  { id: "huobi", name: "Huobi", enabled: false },
-  { id: "ftx", name: "FTX", enabled: false }
-];
-
 const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalProps) => {
   const [selectedExchange, setSelectedExchange] = useState("");
   const [connectionMode, setConnectionMode] = useState("Live");
@@ -47,7 +35,7 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
     { value: "Paper Trading", label: "Paper Trading", description: "Simulated trading" }
   ];
 
-  // Simulate fetching supported exchanges
+  // Fetch supported exchanges from real API
   useEffect(() => {
     if (isOpen) {
       fetchSupportedExchanges();
@@ -59,20 +47,40 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
     setErrorMessage("");
     
     try {
-      console.log('Fetching supported exchanges (mock data)');
+      console.log('Fetching supported exchanges from API...');
       
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
+      const response = await fetch('https://api.coingecko.com/api/v3/exchanges/list');
       
-      setExchanges(MOCK_EXCHANGES);
-      console.log('Loaded mock exchanges:', MOCK_EXCHANGES);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const exchangeData = await response.json();
+      console.log('Received exchange data:', exchangeData);
+      
+      // Map to our Exchange interface and filter for supported ones
+      const supportedExchangeIds = ['binance', 'coinbase-pro', 'kraken', 'bybit', 'okx', 'kucoin', 'huobi', 'ftx'];
+      const mappedExchanges: Exchange[] = exchangeData
+        .filter((ex: any) => supportedExchangeIds.includes(ex.id))
+        .map((ex: any) => ({
+          id: ex.id,
+          name: ex.name,
+          enabled: !['huobi', 'ftx'].includes(ex.id) // Disable some exchanges
+        }));
+      
+      setExchanges(mappedExchanges);
+      console.log('Loaded exchanges:', mappedExchanges);
       
     } catch (error) {
-      console.error('Error loading exchanges:', error);
-      setErrorMessage('Failed to load exchanges');
+      console.error('Error fetching exchanges:', error);
+      setErrorMessage(`Failed to fetch exchanges: ${error instanceof Error ? error.message : 'Unknown error'}`);
       
-      // Still set mock exchanges as fallback
-      setExchanges(MOCK_EXCHANGES);
+      // Fallback to basic exchange list
+      setExchanges([
+        { id: "binance", name: "Binance", enabled: true },
+        { id: "coinbase-pro", name: "Coinbase Pro", enabled: true },
+        { id: "kraken", name: "Kraken", enabled: true }
+      ]);
     } finally {
       setIsLoading(false);
     }
@@ -91,39 +99,69 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
     try {
       console.log('Testing connection to:', selectedExchange);
       
-      const payload = {
-        exchange: selectedExchange.toLowerCase(),
-        mode: connectionMode,
-        ...(connectionMode !== "Paper Trading" && {
-          apiKey,
-          secretKey: '***' // Don't log actual secret
-        })
-      };
-
-      console.log('Connection payload:', payload);
-
-      // Simulate API call with delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      // Simulate different outcomes based on exchange and mode
-      const shouldSucceed = connectionMode === "Paper Trading" || 
-                           selectedExchange === "Binance" ||
-                           Math.random() > 0.3; // 70% success rate for demo
-
-      if (shouldSucceed) {
-        setConnectionStatus('success');
-        console.log('Connection successful for:', selectedExchange);
-        
-        // Clear form after successful connection
-        setTimeout(() => {
-          setApiKey("");
-          setSecretKey("");
-          setConnectionStatus('idle');
-          onClose();
-        }, 2000);
-      } else {
-        throw new Error(`Connection to ${selectedExchange} failed. Please check your API credentials.`);
+      let apiUrl = '';
+      let testEndpoint = '';
+      
+      // Determine API endpoint based on exchange and mode
+      switch (selectedExchange.toLowerCase()) {
+        case 'binance':
+          apiUrl = connectionMode === 'Testnet' ? 'https://testnet.binance.vision' : 'https://api.binance.com';
+          testEndpoint = '/api/v3/exchangeInfo';
+          break;
+        case 'coinbase pro':
+        case 'coinbase-pro':
+          apiUrl = connectionMode === 'Testnet' ? 'https://api-public.sandbox.pro.coinbase.com' : 'https://api.pro.coinbase.com';
+          testEndpoint = '/products';
+          break;
+        case 'kraken':
+          apiUrl = 'https://api.kraken.com';
+          testEndpoint = '/0/public/SystemStatus';
+          break;
+        default:
+          throw new Error(`Exchange ${selectedExchange} not yet supported for live connections`);
       }
+
+      if (connectionMode === "Paper Trading") {
+        // For paper trading, just simulate success
+        console.log('Paper trading mode - simulating connection');
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        setConnectionStatus('success');
+        console.log('Paper trading connection successful');
+      } else {
+        // For live/testnet, test actual API connection
+        console.log(`Testing ${connectionMode} connection to ${apiUrl}${testEndpoint}`);
+        
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+        };
+
+        // Add authentication headers if provided
+        if (apiKey) {
+          headers['X-MBX-APIKEY'] = apiKey; // Binance style
+        }
+
+        const response = await fetch(`${apiUrl}${testEndpoint}`, {
+          method: 'GET',
+          headers,
+        });
+
+        if (!response.ok) {
+          throw new Error(`Connection failed with status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('Connection test successful:', data);
+        setConnectionStatus('success');
+      }
+      
+      // Clear form after successful connection
+      setTimeout(() => {
+        setApiKey("");
+        setSecretKey("");
+        setConnectionStatus('idle');
+        onClose();
+      }, 2000);
+      
     } catch (error) {
       console.error('Connection error:', error);
       setConnectionStatus('error');
@@ -195,7 +233,7 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
             <div className="bg-gray-800 rounded-lg p-3 flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
-                <span className="text-sm text-gray-300">Binance</span>
+                <span className="text-sm text-gray-300">No active connections</span>
               </div>
               <span className="text-xs text-red-400">Disconnected</span>
             </div>
