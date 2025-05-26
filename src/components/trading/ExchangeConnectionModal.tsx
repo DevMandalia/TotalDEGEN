@@ -38,7 +38,7 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
   const [connectionState, setConnectionState] = useState<ConnectionState | null>(null);
   const { toast } = useToast();
 
-  const API_BASE_URL = "https://3000-i55ier1dg4ii27z5jww1z-a32dc834.manus.computer";
+  const API_BASE_URL = "https://3000-i55ier1dg4ii27z5jww1z-a32dc834.manus.computer/api";
 
   const connectionModes = [
     { value: "Live", label: "Live Trading", description: "Real money trading" },
@@ -129,12 +129,12 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
     
     try {
       console.log('=== FETCHING EXCHANGES ===');
-      console.log('Exchanges endpoint:', `${API_BASE_URL}/api/exchanges`);
+      console.log('Exchanges endpoint:', `${API_BASE_URL}/exchanges`);
       
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);
       
-      const response = await fetch(`${API_BASE_URL}/api/exchanges`, {
+      const response = await fetch(`${API_BASE_URL}/exchanges`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -207,12 +207,12 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
   const checkReadOnlyStatus = async (sessionToken: string) => {
     try {
       console.log('=== CHECKING API KEY PERMISSIONS ===');
-      console.log('Account endpoint:', `${API_BASE_URL}/api/exchange/account`);
+      console.log('Account endpoint:', `${API_BASE_URL}/exchange/account`);
       
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 15000);
       
-      const response = await fetch(`${API_BASE_URL}/api/exchange/account`, {
+      const response = await fetch(`${API_BASE_URL}/exchange/account`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${sessionToken}`,
@@ -316,7 +316,7 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout for connection test
 
-        const response = await fetch(`${API_BASE_URL}/api/exchange/connect`, {
+        const response = await fetch(`${API_BASE_URL}/exchange/connect`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
