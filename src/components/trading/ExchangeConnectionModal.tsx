@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { X, Shield, Wifi, Link, Eye, EyeOff } from "lucide-react";
+
+import { useState, useEffect } from "react";
+import { X, Shield, Wifi, Link, Eye, EyeOff, CheckCircle, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -12,6 +13,12 @@ interface ExchangeConnectionModalProps {
   onClose: () => void;
 }
 
+interface Exchange {
+  id: string;
+  name: string;
+  enabled: boolean;
+}
+
 const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalProps) => {
   const [selectedExchange, setSelectedExchange] = useState("");
   const [connectionMode, setConnectionMode] = useState("Live");
@@ -19,21 +26,155 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
   const [secretKey, setSecretKey] = useState("");
   const [showApiKey, setShowApiKey] = useState(false);
   const [showSecretKey, setShowSecretKey] = useState(false);
-
-  const exchanges = [
-    "Binance",
-    "Coinbase Pro",
-    "Kraken",
-    "Bybit",
-    "OKX",
-    "KuCoin"
-  ];
+  const [exchanges, setExchanges] = useState<Exchange[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<'idle' | 'connecting' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState("");
 
   const connectionModes = [
     { value: "Live", label: "Live Trading", description: "Real money trading" },
     { value: "Testnet", label: "Testnet", description: "Test environment with fake money" },
     { value: "Paper Trading", label: "Paper Trading", description: "Simulated trading" }
   ];
+
+  // Fetch supported exchanges on component mount
+  useEffect(() => {
+    if (isOpen) {
+      fetchSupportedExchanges();
+    }
+  }, [isOpen]);
+
+  const fetchSupportedExchanges = async () => {
+    setIsLoading(true);
+    try {
+      console.log('Fetching supported exchanges from:', `${API_URL}/exchanges`);
+      const response = await fetch(`${API_URL}/exchanges`);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch exchanges: ${response.status} ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      console.log('Received exchanges data:', data);
+      
+      if (data.exchanges && Array.isArray(data.exchanges)) {
+        setExchanges(data.exchanges);
+      } else {
+        // Fallback to default exchanges if API doesn't return proper format
+        const defaultExchanges = [
+          { id: "binance", name: "Binance", enabled: true },
+          { id: "coinbasepro", name: "Coinbase Pro", enabled: true },
+          { id: "kraken", name: "Kraken", enabled: true },
+          { id: "bybit", name: "Bybit", enabled: true },
+          { id: "okx", name: "OKX", enabled: true },
+          { id: "kucoin", name: "KuCoin", enabled: true }
+        ];
+        setExchanges(defaultExchanges);
+      }
+    } catch (error) {
+      console.error('Error fetching exchanges:', error);
+      setErrorMessage(`Failed to fetch exchanges: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      
+      // Fallback to default exchanges on error
+      const defaultExchanges = [
+        { id: "binance", name: "Binance", enabled: true },
+        { id: "coinbasepro", name: "Coinbase Pro", enabled: true },
+        { id: "kraken", name: "Kraken", enabled: true },
+        { id: "bybit", name: "Bybit", enabled: true },
+        { id: "okx", name: "OKX", enabled: true },
+        { id: "kucoin", name: "KuCoin", enabled: true }
+      ];
+      setExchanges(defaultExchanges);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const testConnection = async () => {
+    if (!selectedExchange || (connectionMode !== "Paper Trading" && (!apiKey || !secretKey))) {
+      setErrorMessage("Please fill in all required fields");
+      return;
+    }
+
+    setIsLoading(true);
+    setConnectionStatus('connecting');
+    setErrorMessage("");
+
+    try {
+      console.log('Testing connection to:', selectedExchange);
+      
+      const payload = {
+        exchange: selectedExchange.toLowerCase(),
+        mode: connectionMode,
+        ...(connectionMode !== "Paper Trading" && {
+          apiKey,
+          secretKey
+        })
+      };
+
+      console.log('Connection payload:', { ...payload, secretKey: '***' });
+
+      const response = await fetch(`${API_URL}/exchanges/connect`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+      console.log('Connection response:', data);
+
+      if (!response.ok) {
+        throw new Error(data.message || `Connection failed: ${response.status} ${response.statusText}`);
+      }
+
+      if (data.success) {
+        setConnectionStatus('success');
+        console.log('Connection successful:', data);
+        
+        // Clear form after successful connection
+        setTimeout(() => {
+          setApiKey("");
+          setSecretKey("");
+          setConnectionStatus('idle');
+          onClose();
+        }, 2000);
+      } else {
+        throw new Error(data.message || 'Connection failed');
+      }
+    } catch (error) {
+      console.error('Connection error:', error);
+      setConnectionStatus('error');
+      setErrorMessage(error instanceof Error ? error.message : 'Connection failed');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getConnectionButtonText = () => {
+    switch (connectionStatus) {
+      case 'connecting':
+        return 'Connecting...';
+      case 'success':
+        return 'Connected!';
+      case 'error':
+        return 'Try Again';
+      default:
+        return 'Connect Exchange';
+    }
+  };
+
+  const getConnectionButtonColor = () => {
+    switch (connectionStatus) {
+      case 'success':
+        return 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600';
+      case 'error':
+        return 'bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600';
+      default:
+        return 'bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600';
+    }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -55,6 +196,14 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
               Your API keys are encrypted and stored securely. We never store your secret keys in plain text.
             </p>
           </div>
+
+          {/* Error Message */}
+          {errorMessage && (
+            <div className="bg-red-900/30 border border-red-500/50 rounded-lg p-3 flex items-start gap-3">
+              <AlertCircle className="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" />
+              <p className="text-sm text-red-300">{errorMessage}</p>
+            </div>
+          )}
 
           {/* Current Connections */}
           <div>
@@ -99,15 +248,22 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
               </div>
 
               <div>
-                <label className="block text-sm text-gray-400 mb-2">Exchange Platform</label>
-                <Select value={selectedExchange} onValueChange={setSelectedExchange}>
+                <label className="block text-sm text-gray-400 mb-2">
+                  Exchange Platform {isLoading && <span className="text-blue-400">(Loading...)</span>}
+                </label>
+                <Select value={selectedExchange} onValueChange={setSelectedExchange} disabled={isLoading}>
                   <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
                     <SelectValue placeholder="Select an exchange" />
                   </SelectTrigger>
                   <SelectContent className="bg-gray-800 border-gray-700">
                     {exchanges.map((exchange) => (
-                      <SelectItem key={exchange} value={exchange} className="text-white">
-                        {exchange}
+                      <SelectItem 
+                        key={exchange.id} 
+                        value={exchange.name} 
+                        className="text-white"
+                        disabled={!exchange.enabled}
+                      >
+                        {exchange.name} {!exchange.enabled && "(Coming Soon)"}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -169,10 +325,13 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
               )}
 
               <Button 
-                className="w-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white font-medium"
-                disabled={connectionMode !== "Paper Trading" && (!selectedExchange || !apiKey || !secretKey)}
+                className={`w-full ${getConnectionButtonColor()} text-white font-medium flex items-center gap-2`}
+                disabled={isLoading || (connectionMode !== "Paper Trading" && (!selectedExchange || !apiKey || !secretKey))}
+                onClick={testConnection}
               >
-                Connect Exchange
+                {connectionStatus === 'success' && <CheckCircle className="w-4 h-4" />}
+                {connectionStatus === 'error' && <AlertCircle className="w-4 h-4" />}
+                {getConnectionButtonText()}
               </Button>
             </div>
           </div>
