@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { X, Shield, Wifi, Link, Eye, EyeOff, CheckCircle, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -18,6 +17,13 @@ interface Exchange {
   enabled: boolean;
 }
 
+interface ConnectionState {
+  connected: boolean;
+  exchange: string;
+  sessionToken: string;
+  isReadOnly: boolean;
+}
+
 const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalProps) => {
   const [selectedExchange, setSelectedExchange] = useState("");
   const [connectionMode, setConnectionMode] = useState("Live");
@@ -29,6 +35,7 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
   const [isLoading, setIsLoading] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'idle' | 'connecting' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState("");
+  const [connectionState, setConnectionState] = useState<ConnectionState | null>(null);
   const { toast } = useToast();
 
   const API_BASE_URL = "https://3000-i55ier1dg4ii27z5jww1z-a32dc834.manus.computer";
@@ -196,6 +203,68 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
     }
   };
 
+  // Add function to check read-only status
+  const checkReadOnlyStatus = async (sessionToken: string) => {
+    try {
+      console.log('=== CHECKING API KEY PERMISSIONS ===');
+      console.log('Account endpoint:', `${API_BASE_URL}/exchange/account`);
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+      
+      const response = await fetch(`${API_BASE_URL}/exchange/account`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${sessionToken}`,
+          'Content-Type': 'application/json'
+        },
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      
+      console.log('Account check response status:', response.status);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to check account permissions: ${response.status} ${response.statusText}`);
+      }
+      
+      const result = await response.json();
+      console.log('Account check result:', result);
+      
+      if (result.success) {
+        const isReadOnly = result.isReadOnly || false;
+        console.log('API key read-only status:', isReadOnly);
+        return isReadOnly;
+      } else {
+        throw new Error(result.message || "Failed to check account permissions");
+      }
+    } catch (error) {
+      console.error('=== PERMISSION CHECK FAILED ===');
+      console.error('Error details:', error);
+      // Don't fail the entire connection for permission check issues
+      return false; // Assume not read-only if we can't determine
+    }
+  };
+
+  // Add function to save connection state
+  const saveConnectionState = (state: ConnectionState) => {
+    setConnectionState(state);
+    console.log('Connection state saved:', state);
+    
+    // Store in localStorage for persistence
+    localStorage.setItem('exchangeConnection', JSON.stringify(state));
+  };
+
+  // Add function to show read-only warning
+  const showReadOnlyWarning = () => {
+    toast({
+      title: "Read-Only API Key Detected",
+      description: "Your API key has read-only permissions. Trading functions will be disabled.",
+      variant: "destructive",
+    });
+  };
+
   const testConnection = async () => {
     if (!selectedExchange || (connectionMode !== "Paper Trading" && (!apiKey || !secretKey))) {
       setErrorMessage("Please fill in all required fields");
@@ -217,6 +286,14 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
         await new Promise(resolve => setTimeout(resolve, 1500));
         setConnectionStatus('success');
         console.log('Paper trading connection successful');
+        
+        // Save paper trading connection state
+        saveConnectionState({
+          connected: true,
+          exchange: selectedExchange.toLowerCase(),
+          sessionToken: 'paper-trading-token',
+          isReadOnly: false
+        });
         
         toast({
           title: "Connection Successful",
@@ -265,11 +342,28 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
           // Store the session token for subsequent authenticated requests
           const sessionToken = result.token;
           console.log('Connection successful, received session token');
+          
+          // Check if API key is read-only
+          const isReadOnly = await checkReadOnlyStatus(sessionToken);
+          
+          // Store both the session token and read-only status
+          saveConnectionState({
+            connected: true,
+            exchange: selectedExchange.toLowerCase(),
+            sessionToken,
+            isReadOnly
+          });
+          
           setConnectionStatus('success');
+          
+          // Update UI based on read-only status
+          if (isReadOnly) {
+            showReadOnlyWarning();
+          }
           
           toast({
             title: "Connection Successful",
-            description: `Successfully connected to ${selectedExchange} in ${connectionMode} mode`,
+            description: `Successfully connected to ${selectedExchange} in ${connectionMode} mode${isReadOnly ? ' (Read-Only)' : ''}`,
           });
         } else {
           // Handle connection failure
