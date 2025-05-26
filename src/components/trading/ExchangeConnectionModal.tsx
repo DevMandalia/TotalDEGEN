@@ -6,8 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
-const API_URL = "https://3000-i55ier1dg4ii27z5jww1z-a32dc834.manus.computer/api";
-
 interface ExchangeConnectionModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -18,6 +16,18 @@ interface Exchange {
   name: string;
   enabled: boolean;
 }
+
+// Mock data for supported exchanges
+const MOCK_EXCHANGES: Exchange[] = [
+  { id: "binance", name: "Binance", enabled: true },
+  { id: "coinbasepro", name: "Coinbase Pro", enabled: true },
+  { id: "kraken", name: "Kraken", enabled: true },
+  { id: "bybit", name: "Bybit", enabled: true },
+  { id: "okx", name: "OKX", enabled: true },
+  { id: "kucoin", name: "KuCoin", enabled: true },
+  { id: "huobi", name: "Huobi", enabled: false },
+  { id: "ftx", name: "FTX", enabled: false }
+];
 
 const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalProps) => {
   const [selectedExchange, setSelectedExchange] = useState("");
@@ -37,7 +47,7 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
     { value: "Paper Trading", label: "Paper Trading", description: "Simulated trading" }
   ];
 
-  // Fetch supported exchanges on component mount
+  // Simulate fetching supported exchanges
   useEffect(() => {
     if (isOpen) {
       fetchSupportedExchanges();
@@ -46,45 +56,23 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
 
   const fetchSupportedExchanges = async () => {
     setIsLoading(true);
+    setErrorMessage("");
+    
     try {
-      console.log('Fetching supported exchanges from:', `${API_URL}/exchanges`);
-      const response = await fetch(`${API_URL}/exchanges`);
+      console.log('Fetching supported exchanges (mock data)');
       
-      if (!response.ok) {
-        throw new Error(`Failed to fetch exchanges: ${response.status} ${response.statusText}`);
-      }
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 500));
       
-      const data = await response.json();
-      console.log('Received exchanges data:', data);
+      setExchanges(MOCK_EXCHANGES);
+      console.log('Loaded mock exchanges:', MOCK_EXCHANGES);
       
-      if (data.exchanges && Array.isArray(data.exchanges)) {
-        setExchanges(data.exchanges);
-      } else {
-        // Fallback to default exchanges if API doesn't return proper format
-        const defaultExchanges = [
-          { id: "binance", name: "Binance", enabled: true },
-          { id: "coinbasepro", name: "Coinbase Pro", enabled: true },
-          { id: "kraken", name: "Kraken", enabled: true },
-          { id: "bybit", name: "Bybit", enabled: true },
-          { id: "okx", name: "OKX", enabled: true },
-          { id: "kucoin", name: "KuCoin", enabled: true }
-        ];
-        setExchanges(defaultExchanges);
-      }
     } catch (error) {
-      console.error('Error fetching exchanges:', error);
-      setErrorMessage(`Failed to fetch exchanges: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error('Error loading exchanges:', error);
+      setErrorMessage('Failed to load exchanges');
       
-      // Fallback to default exchanges on error
-      const defaultExchanges = [
-        { id: "binance", name: "Binance", enabled: true },
-        { id: "coinbasepro", name: "Coinbase Pro", enabled: true },
-        { id: "kraken", name: "Kraken", enabled: true },
-        { id: "bybit", name: "Bybit", enabled: true },
-        { id: "okx", name: "OKX", enabled: true },
-        { id: "kucoin", name: "KuCoin", enabled: true }
-      ];
-      setExchanges(defaultExchanges);
+      // Still set mock exchanges as fallback
+      setExchanges(MOCK_EXCHANGES);
     } finally {
       setIsLoading(false);
     }
@@ -108,30 +96,23 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
         mode: connectionMode,
         ...(connectionMode !== "Paper Trading" && {
           apiKey,
-          secretKey
+          secretKey: '***' // Don't log actual secret
         })
       };
 
-      console.log('Connection payload:', { ...payload, secretKey: '***' });
+      console.log('Connection payload:', payload);
 
-      const response = await fetch(`${API_URL}/exchanges/connect`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
+      // Simulate API call with delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
-      const data = await response.json();
-      console.log('Connection response:', data);
+      // Simulate different outcomes based on exchange and mode
+      const shouldSucceed = connectionMode === "Paper Trading" || 
+                           selectedExchange === "Binance" ||
+                           Math.random() > 0.3; // 70% success rate for demo
 
-      if (!response.ok) {
-        throw new Error(data.message || `Connection failed: ${response.status} ${response.statusText}`);
-      }
-
-      if (data.success) {
+      if (shouldSucceed) {
         setConnectionStatus('success');
-        console.log('Connection successful:', data);
+        console.log('Connection successful for:', selectedExchange);
         
         // Clear form after successful connection
         setTimeout(() => {
@@ -141,7 +122,7 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
           onClose();
         }, 2000);
       } else {
-        throw new Error(data.message || 'Connection failed');
+        throw new Error(`Connection to ${selectedExchange} failed. Please check your API credentials.`);
       }
     } catch (error) {
       console.error('Connection error:', error);
