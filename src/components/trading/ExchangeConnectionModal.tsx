@@ -143,8 +143,17 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
         throw new Error(`Failed to fetch exchanges: ${response.status} ${response.statusText}`);
       }
       
-      const exchangeData = await response.json();
-      console.log('Raw exchange data from backend:', exchangeData);
+      const result = await response.json();
+      console.log('Raw exchange data from backend:', result);
+      
+      // Check if the response has the expected structure
+      const exchangeData = result.data || result;
+      console.log('Extracted exchange data:', exchangeData);
+      
+      // Ensure we have an array to work with
+      if (!Array.isArray(exchangeData)) {
+        throw new Error('Exchange data is not in the expected array format');
+      }
       
       // Map to our Exchange interface
       const mappedExchanges: Exchange[] = exchangeData.map((ex: any) => ({
