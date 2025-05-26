@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { X, Shield, Wifi, Link, Eye, EyeOff, CheckCircle, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -222,27 +223,28 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
           description: `Successfully connected to ${selectedExchange} in Paper Trading mode`,
         });
       } else {
-        // For live/testnet, test actual connection using your backend API
+        // For live/testnet, test actual connection using backend API
         console.log(`Testing ${connectionMode} connection via backend API`);
         
-        const requestBody = {
+        // Format connection request properly for Binance API
+        const connectionRequest = {
           exchange: selectedExchange.toLowerCase(),
-          mode: connectionMode.toLowerCase(),
           apiKey: apiKey,
-          secretKey: secretKey
+          apiSecret: secretKey,
+          testnet: connectionMode === "Testnet" // boolean indicating if testnet should be used
         };
 
-        console.log('Connection request body:', { ...requestBody, apiKey: '[HIDDEN]', secretKey: '[HIDDEN]' });
+        console.log('Connection request body:', { ...connectionRequest, apiKey: '[HIDDEN]', apiSecret: '[HIDDEN]' });
 
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout for connection test
 
-        const response = await fetch(`${API_BASE_URL}/api/exchange/connect`, {
+        const response = await fetch(`${API_BASE_URL}/exchange/connect`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(requestBody),
+          body: JSON.stringify(connectionRequest),
           signal: controller.signal
         });
 
@@ -252,19 +254,27 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
         console.log('Connection response headers:', response.headers);
 
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({ error: 'Connection failed' }));
-          console.error('Connection error response:', errorData);
-          throw new Error(errorData.error || `Connection failed with status: ${response.status}`);
+          throw new Error(`Connection failed with status: ${response.status} ${response.statusText}`);
         }
 
-        const connectionData = await response.json();
-        console.log('Connection test successful:', connectionData);
-        setConnectionStatus('success');
+        const result = await response.json();
+        console.log('Connection test result:', result);
         
-        toast({
-          title: "Connection Successful",
-          description: `Successfully connected to ${selectedExchange} in ${connectionMode} mode`,
-        });
+        // Handle the successful connection
+        if (result.success) {
+          // Store the session token for subsequent authenticated requests
+          const sessionToken = result.token;
+          console.log('Connection successful, received session token');
+          setConnectionStatus('success');
+          
+          toast({
+            title: "Connection Successful",
+            description: `Successfully connected to ${selectedExchange} in ${connectionMode} mode`,
+          });
+        } else {
+          // Handle connection failure
+          throw new Error(result.message || "Failed to connect to exchange");
+        }
       }
       
       // Clear form after successful connection
