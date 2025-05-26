@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { X, Shield, Wifi, Link, Eye, EyeOff, CheckCircle, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -42,30 +41,77 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
   // Test API health on component mount
   useEffect(() => {
     if (isOpen) {
+      console.log('Modal opened, testing API connection...');
       testApiHealth();
     }
   }, [isOpen]);
 
   const testApiHealth = async () => {
     try {
-      console.log('Testing API health...');
-      const response = await fetch(`${API_BASE_URL}/health`);
+      console.log('=== TESTING API HEALTH ===');
+      console.log('API Base URL:', API_BASE_URL);
+      console.log('Health endpoint:', `${API_BASE_URL}/health`);
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
+      const response = await fetch(`${API_BASE_URL}/health`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      
+      console.log('Health check response status:', response.status);
+      console.log('Health check response headers:', response.headers);
       
       if (!response.ok) {
-        throw new Error(`Health check failed with status: ${response.status}`);
+        throw new Error(`Health check failed with status: ${response.status} ${response.statusText}`);
       }
       
       const healthData = await response.json();
       console.log('API Health check result:', healthData);
       
       if (healthData.status === 'ok') {
+        console.log('API is healthy, fetching exchanges...');
+        toast({
+          title: "API Connected",
+          description: "Successfully connected to the backend API",
+        });
         fetchSupportedExchanges();
       } else {
-        setErrorMessage('API is not healthy');
+        throw new Error('API health check returned non-ok status');
       }
     } catch (error) {
-      console.error('API Health check failed:', error);
-      setErrorMessage(`API connection failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error('=== API HEALTH CHECK FAILED ===');
+      console.error('Error details:', error);
+      
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          setErrorMessage('API connection timeout (10s)');
+        } else if (error.message.includes('fetch')) {
+          setErrorMessage('Network error - API server may be down');
+        } else {
+          setErrorMessage(`API error: ${error.message}`);
+        }
+      } else {
+        setErrorMessage('Unknown API connection error');
+      }
+      
+      toast({
+        title: "API Connection Failed",
+        description: "Using fallback exchange list",
+        variant: "destructive",
+      });
+      
+      // Fallback to basic exchange list
+      setExchanges([
+        { id: "binance", name: "Binance", enabled: true },
+        { id: "hyperliquid", name: "Hyperliquid", enabled: true }
+      ]);
     }
   };
 
@@ -74,16 +120,31 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
     setErrorMessage("");
     
     try {
-      console.log('Fetching supported exchanges from backend API...');
+      console.log('=== FETCHING EXCHANGES ===');
+      console.log('Exchanges endpoint:', `${API_BASE_URL}/api/exchanges`);
       
-      const response = await fetch(`${API_BASE_URL}/api/exchanges`);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      
+      const response = await fetch(`${API_BASE_URL}/api/exchanges`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      
+      console.log('Exchanges response status:', response.status);
+      console.log('Exchanges response headers:', response.headers);
       
       if (!response.ok) {
-        throw new Error(`Failed to fetch exchanges: ${response.status}`);
+        throw new Error(`Failed to fetch exchanges: ${response.status} ${response.statusText}`);
       }
       
       const exchangeData = await response.json();
-      console.log('Received exchange data from backend:', exchangeData);
+      console.log('Raw exchange data from backend:', exchangeData);
       
       // Map to our Exchange interface
       const mappedExchanges: Exchange[] = exchangeData.map((ex: any) => ({
@@ -93,13 +154,29 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
       }));
       
       setExchanges(mappedExchanges);
-      console.log('Loaded exchanges:', mappedExchanges);
+      console.log('Successfully loaded exchanges:', mappedExchanges);
+      
+      toast({
+        title: "Exchanges Loaded",
+        description: `Loaded ${mappedExchanges.length} supported exchanges`,
+      });
       
     } catch (error) {
-      console.error('Error fetching exchanges from backend:', error);
-      setErrorMessage(`Failed to fetch exchanges: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error('=== EXCHANGE FETCH FAILED ===');
+      console.error('Error details:', error);
       
-      // Fallback to basic exchange list based on your API
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          setErrorMessage('Exchange fetch timeout (10s)');
+        } else {
+          setErrorMessage(`Failed to fetch exchanges: ${error.message}`);
+        }
+      } else {
+        setErrorMessage('Unknown error fetching exchanges');
+      }
+      
+      // Fallback to basic exchange list
+      console.log('Using fallback exchange list');
       setExchanges([
         { id: "binance", name: "Binance", enabled: true },
         { id: "hyperliquid", name: "Hyperliquid", enabled: true }
@@ -120,7 +197,9 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
     setErrorMessage("");
 
     try {
-      console.log('Testing connection to:', selectedExchange);
+      console.log('=== TESTING CONNECTION ===');
+      console.log('Exchange:', selectedExchange);
+      console.log('Mode:', connectionMode);
       
       if (connectionMode === "Paper Trading") {
         // For paper trading, just simulate success
@@ -144,16 +223,28 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
           secretKey: secretKey
         };
 
+        console.log('Connection request body:', { ...requestBody, apiKey: '[HIDDEN]', secretKey: '[HIDDEN]' });
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout for connection test
+
         const response = await fetch(`${API_BASE_URL}/api/exchange/connect`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(requestBody)
+          body: JSON.stringify(requestBody),
+          signal: controller.signal
         });
+
+        clearTimeout(timeoutId);
+        
+        console.log('Connection response status:', response.status);
+        console.log('Connection response headers:', response.headers);
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({ error: 'Connection failed' }));
+          console.error('Connection error response:', errorData);
           throw new Error(errorData.error || `Connection failed with status: ${response.status}`);
         }
 
@@ -176,9 +267,19 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
       }, 2000);
       
     } catch (error) {
-      console.error('Connection error:', error);
+      console.error('=== CONNECTION ERROR ===');
+      console.error('Error details:', error);
       setConnectionStatus('error');
-      const errorMsg = error instanceof Error ? error.message : 'Connection failed';
+      
+      let errorMsg = 'Connection failed';
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          errorMsg = 'Connection timeout (30s)';
+        } else {
+          errorMsg = error.message;
+        }
+      }
+      
       setErrorMessage(errorMsg);
       
       toast({
