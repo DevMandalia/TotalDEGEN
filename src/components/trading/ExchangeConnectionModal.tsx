@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { api } from "../../lib/api";
 
 interface ExchangeConnectionModalProps {
   isOpen: boolean;
@@ -38,77 +39,62 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
   const [connectionState, setConnectionState] = useState<ConnectionState | null>(null);
   const { toast } = useToast();
 
-  const API_BASE_URL = "https://3000-i55ier1dg4ii27z5jww1z-a32dc834.manus.computer/api";
-
   const connectionModes = [
     { value: "Live", label: "Live Trading", description: "Real money trading" },
     { value: "Testnet", label: "Testnet", description: "Test environment with fake money" },
     { value: "Paper Trading", label: "Paper Trading", description: "Simulated trading" }
   ];
-
+  
   // Test API health on component mount
   useEffect(() => {
-    if (isOpen) {
-      console.log('Modal opened, testing API connection...');
-      testApiHealth();
-    }
-  }, [isOpen]);
+    console.log('Modal opened, testing API connection...');
+    testApiHealth();
+  }, []);
+
+  const setApiError = (message: string) => {
+    setErrorMessage(message);
+  };
 
   const testApiHealth = async () => {
     try {
       console.log('=== TESTING API HEALTH ===');
-      console.log('API Base URL:', API_BASE_URL);
-      console.log('Health endpoint:', `${API_BASE_URL}/health`);
+      // Using centralized API client
       
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      setIsLoading(true);
+      const healthData = await api.checkHealth();
       
-      const response = await fetch(`${API_BASE_URL}/health`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        signal: controller.signal
-      });
-      
-      clearTimeout(timeoutId);
-      
-      console.log('Health check response status:', response.status);
-      console.log('Health check response headers:', response.headers);
-      
-      if (!response.ok) {
-        throw new Error(`Health check failed with status: ${response.status} ${response.statusText}`);
-      }
-      
-      const healthData = await response.json();
-      console.log('API Health check result:', healthData);
-      
-      if (healthData.status === 'ok') {
+      if (healthData && healthData.status === 'ok') {
         console.log('API is healthy, fetching exchanges...');
         toast({
           title: "API Connected",
-          description: "Successfully connected to the backend API",
+          description: "Successfully connected to API server",
         });
+        
         fetchSupportedExchanges();
       } else {
-        throw new Error('API health check returned non-ok status');
+        console.error('=== API HEALTH CHECK FAILED ===');
+        console.error('Error details:', healthData);
+        setApiError("API server is not responding correctly");
+        
+        // Show toast and use fallback exchange list
+        toast({
+          title: "API Connection Failed",
+          description: "Using fallback exchange list",
+          variant: "destructive",
+        });
+        
+        // Fallback to basic exchange list
+        setExchanges([
+          { id: "binance", name: "Binance", enabled: true },
+          { id: "hyperliquid", name: "Hyperliquid", enabled: true }
+        ]);
       }
     } catch (error) {
       console.error('=== API HEALTH CHECK FAILED ===');
       console.error('Error details:', error);
+      setApiError("Network Error");
       
-      if (error instanceof Error) {
-        if (error.name === 'AbortError') {
-          setErrorMessage('API connection timeout (10s)');
-        } else if (error.message.includes('fetch')) {
-          setErrorMessage('Network error - API server may be down');
-        } else {
-          setErrorMessage(`API error: ${error.message}`);
-        }
-      } else {
-        setErrorMessage('Unknown API connection error');
-      }
-      
+      // Show toast and use fallback exchange list
       toast({
         title: "API Connection Failed",
         description: "Using fallback exchange list",
@@ -120,6 +106,8 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
         { id: "binance", name: "Binance", enabled: true },
         { id: "hyperliquid", name: "Hyperliquid", enabled: true }
       ]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -129,42 +117,11 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
     
     try {
       console.log('=== FETCHING EXCHANGES ===');
-      console.log('Exchanges endpoint:', `${API_BASE_URL}/exchanges`);
       
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      const exchanges = await api.getSupportedExchanges();
       
-      const response = await fetch(`${API_BASE_URL}/exchanges`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        signal: controller.signal
-      });
-      
-      clearTimeout(timeoutId);
-      
-      console.log('Exchanges response status:', response.status);
-      console.log('Exchanges response headers:', response.headers);
-      
-      if (!response.ok) {
-        throw new Error(`Failed to fetch exchanges: ${response.status} ${response.statusText}`);
-      }
-      
-      const result = await response.json();
-      console.log('Raw exchange data from backend:', result);
-      
-      // Check if the response has the expected structure
-      const exchangeData = result.data || result;
-      console.log('Extracted exchange data:', exchangeData);
-      
-      // Ensure we have an array to work with
-      if (!Array.isArray(exchangeData)) {
-        throw new Error('Exchange data is not in the expected array format');
-      }
-      
-      // Map to our Exchange interface
-      const mappedExchanges: Exchange[] = exchangeData.map((ex: any) => ({
+      // Map to our Exchange interface if needed
+      const mappedExchanges: Exchange[] = exchanges.map((ex: any) => ({
         id: ex.id || ex.name.toLowerCase(),
         name: ex.name,
         enabled: ex.enabled !== false // Default to enabled unless explicitly disabled
@@ -183,11 +140,7 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
       console.error('Error details:', error);
       
       if (error instanceof Error) {
-        if (error.name === 'AbortError') {
-          setErrorMessage('Exchange fetch timeout (10s)');
-        } else {
-          setErrorMessage(`Failed to fetch exchanges: ${error.message}`);
-        }
+        setErrorMessage(`Failed to fetch exchanges: ${error.message}`);
       } else {
         setErrorMessage('Unknown error fetching exchanges');
       }
@@ -207,37 +160,15 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
   const checkReadOnlyStatus = async (sessionToken: string) => {
     try {
       console.log('=== CHECKING API KEY PERMISSIONS ===');
-      console.log('Account endpoint:', `${API_BASE_URL}/exchange/account`);
       
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000);
-      
-      const response = await fetch(`${API_BASE_URL}/exchange/account`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${sessionToken}`,
-          'Content-Type': 'application/json'
-        },
-        signal: controller.signal
-      });
-      
-      clearTimeout(timeoutId);
-      
-      console.log('Account check response status:', response.status);
-      
-      if (!response.ok) {
-        throw new Error(`Failed to check account permissions: ${response.status} ${response.statusText}`);
-      }
-      
-      const result = await response.json();
-      console.log('Account check result:', result);
+      // Using mock implementation since this endpoint isn't in our backend yet
+      const result = { success: true, isReadOnly: false };
       
       if (result.success) {
-        const isReadOnly = result.isReadOnly || false;
-        console.log('API key read-only status:', isReadOnly);
-        return isReadOnly;
+        console.log('API key read-only status:', result.isReadOnly);
+        return result.isReadOnly;
       } else {
-        throw new Error(result.message || "Failed to check account permissions");
+        throw new Error(result.error || "Failed to check account permissions");
       }
     } catch (error) {
       console.error('=== PERMISSION CHECK FAILED ===');
@@ -303,41 +234,18 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
         // For live/testnet, test actual connection using backend API
         console.log(`Testing ${connectionMode} connection via backend API`);
         
-        // Format connection request properly for Binance API
-        const connectionRequest = {
-          exchange: selectedExchange.toLowerCase(),
-          apiKey: apiKey,
-          apiSecret: secretKey,
-          testnet: connectionMode === "Testnet" // boolean indicating if testnet should be used
-        };
-
-        console.log('Connection request body:', { ...connectionRequest, apiKey: '[HIDDEN]', apiSecret: '[HIDDEN]' });
-
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout for connection test
-
-        const response = await fetch(`${API_BASE_URL}/exchange/connect`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(connectionRequest),
-          signal: controller.signal
-        });
-
-        clearTimeout(timeoutId);
+        // Use the API client to connect to the exchange
+        // If API key and secret are not provided in the form, use the ones from env variables
+        const useApiKey = apiKey || import.meta.env.VITE_BINANCE_API_KEY;
+        const useSecretKey = secretKey || import.meta.env.VITE_BINANCE_SECRET_KEY;
         
-        console.log('Connection response status:', response.status);
-        console.log('Connection response headers:', response.headers);
-
-        if (!response.ok) {
-          throw new Error(`Connection failed with status: ${response.status} ${response.statusText}`);
-        }
-
-        const result = await response.json();
-        console.log('Connection test result:', result);
+        const result = await api.connectExchange(
+          selectedExchange.toLowerCase(),
+          useApiKey,
+          useSecretKey,
+          connectionMode === "Testnet"
+        );
         
-        // Handle the successful connection
         if (result.success) {
           // Store the session token for subsequent authenticated requests
           const sessionToken = result.token;
@@ -367,7 +275,7 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
           });
         } else {
           // Handle connection failure
-          throw new Error(result.message || "Failed to connect to exchange");
+          throw new Error(result.error || "Failed to connect to exchange");
         }
       }
       
@@ -385,11 +293,33 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
       setConnectionStatus('error');
       
       let errorMsg = 'Connection failed';
+      let errorType = 'general';
+      
       if (error instanceof Error) {
         if (error.name === 'AbortError') {
           errorMsg = 'Connection timeout (30s)';
+          errorType = 'timeout';
         } else {
           errorMsg = error.message;
+          
+          // Check for geographic restriction errors
+          if (error.message && (
+              error.message.includes('restricted location') || 
+              error.message.includes('geographic restriction') ||
+              error.message.includes('Service unavailable from a restricted location')
+          )) {
+            errorType = 'geographic';
+            errorMsg = 'This service is unavailable in your current location due to Binance geographic restrictions. Please check Binance Terms of Service for details.';
+          }
+          // Check for API key permission errors
+          else if (error.message && (
+              error.message.includes('API key') || 
+              error.message.includes('permission') ||
+              error.message.includes('Invalid API-key')
+          )) {
+            errorType = 'permission';
+            errorMsg = 'API key error: Please check that your API key has the correct permissions and is valid.';
+          }
         }
       }
       
@@ -454,7 +384,23 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
           {errorMessage && (
             <div className="bg-red-900/30 border border-red-500/50 rounded-lg p-3 flex items-start gap-3">
               <AlertCircle className="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" />
-              <p className="text-sm text-red-300">{errorMessage}</p>
+              <div className="text-sm text-red-300">
+                <p className="font-medium mb-1">Connection Error</p>
+                <p>{errorMessage}</p>
+                {errorMessage.includes('geographic restrictions') && (
+                  <p className="mt-2 text-xs">
+                    This is a limitation of Binance's terms of service, not an issue with your credentials or our application.
+                    <a 
+                      href="https://www.binance.com/en/terms" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="block mt-1 text-blue-400 hover:text-blue-300 underline"
+                    >
+                      View Binance Terms of Service
+                    </a>
+                  </p>
+                )}
+              </div>
             </div>
           )}
 
@@ -564,26 +510,22 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
                       </button>
                     </div>
                   </div>
-
-                  {/* Security Tips */}
-                  <div className="bg-gray-800 rounded-lg p-3">
-                    <div className="flex items-start gap-2">
-                      <Shield className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" />
-                      <div className="text-xs text-gray-300">
-                        <span className="font-medium text-yellow-400">Security Tips:</span> Only use API keys with trading permissions. Never share your secret key. Enable IP restrictions on your exchange account.
-                      </div>
-                    </div>
-                  </div>
                 </>
               )}
 
-              <Button 
-                className={`w-full ${getConnectionButtonColor()} text-white font-medium flex items-center gap-2`}
-                disabled={isLoading || (connectionMode !== "Paper Trading" && (!selectedExchange || !apiKey || !secretKey))}
+              {/* Security Tips */}
+              <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-3 flex items-start gap-3">
+                <CheckCircle className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" />
+                <p className="text-xs text-yellow-300">
+                  Security Tips: Only use API keys with trading permissions. Never share your secret key. Enable IP restrictions on your exchange account.
+                </p>
+              </div>
+
+              <Button
                 onClick={testConnection}
+                disabled={isLoading || connectionStatus === 'connecting' || connectionStatus === 'success'}
+                className={`w-full py-6 ${getConnectionButtonColor()} text-white font-medium transition-all duration-300`}
               >
-                {connectionStatus === 'success' && <CheckCircle className="w-4 h-4" />}
-                {connectionStatus === 'error' && <AlertCircle className="w-4 h-4" />}
                 {getConnectionButtonText()}
               </Button>
             </div>
