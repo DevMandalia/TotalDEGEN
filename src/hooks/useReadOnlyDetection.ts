@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 
-const API_URL = "https://3000-i55ier1dg4ii27z5jww1z-a32dc834.manus.computer/api";
+const API_BASE_URL = "https://3000-i55ier1dg4ii27z5jww1z-a32dc834.manus.computer/api";
 
 interface ReadOnlyDetectionResult {
   isReadOnly: boolean;
@@ -20,7 +20,7 @@ export const useReadOnlyDetection = (): ReadOnlyDetectionResult => {
         setIsLoading(true);
         setError(null);
 
-        const response = await fetch(`${API_URL}/status`, {
+        const response = await fetch(`${API_BASE_URL}/status`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
