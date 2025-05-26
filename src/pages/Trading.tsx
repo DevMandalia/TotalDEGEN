@@ -7,6 +7,7 @@ import OpenPositions from "@/components/trading/OpenPositions";
 import RecentTrades from "@/components/trading/RecentTrades";
 import ExchangeConnectionModal from "@/components/trading/ExchangeConnectionModal";
 import SettingsModal from "@/components/trading/SettingsModal";
+import BackendStatus from "@/components/BackendStatus";
 import AnimatedBackground from "@/components/ui/animated-background";
 
 const Trading = () => {
@@ -73,6 +74,8 @@ const Trading = () => {
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
       />
+
+      <BackendStatus />
     </div>
   );
 };
