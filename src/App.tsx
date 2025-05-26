@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Trading from "./pages/Trading";
 import Position from "./pages/Position";
 import Correlation from "./pages/Correlation";
+import Dash from "./pages/Dash";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +24,7 @@ const App = () => (
             <Route path="/trading" element={<Trading />} />
             <Route path="/position" element={<Position />} />
             <Route path="/correlation" element={<Correlation />} />
+            <Route path="/dash" element={<Dash />} />
           </Routes>
         </BrowserRouter>
       </div>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Bell, User, Zap, Home, TrendingUp, BarChart3, Settings } from "lucide-react";
+import { Search, Bell, User, Zap, Home, TrendingUp, BarChart3, Settings, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -18,6 +18,7 @@ const TradingNavigation = ({ onAccountClick, onSettingsClick }: TradingNavigatio
     { name: "Dashboard", path: "/trading", icon: Home },
     { name: "Positions", path: "/position", icon: TrendingUp },
     { name: "Markets", path: "/correlation", icon: BarChart3 },
+    { name: "Dash", path: "/dash", icon: LayoutDashboard },
   ];
 
   const getStatusColor = (status: string) => {
