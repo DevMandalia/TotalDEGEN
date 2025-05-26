@@ -168,7 +168,7 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
         console.log('API key read-only status:', result.isReadOnly);
         return result.isReadOnly;
       } else {
-        throw new Error(result.error || "Failed to check account permissions");
+        throw new Error("Failed to check account permissions");
       }
     } catch (error) {
       console.error('=== PERMISSION CHECK FAILED ===');
