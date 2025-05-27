@@ -115,14 +115,70 @@ app.post('/api/exchange/connect', async (req, res) => {
         });
       }
     } else if (exchange === 'hyperliquid') {
-      // Implement Hyperliquid connection logic here
-      return res.json({
-        success: true,
-        message: 'Successfully connected to Hyperliquid',
-        data: {
-          exchange: 'hyperliquid'
+      // Implement Hyperliquid connection logic using direct REST API
+      try {
+        // First, verify the API keys by making a request to the info endpoint
+        const response = await axios({
+          method: 'POST',
+          url: 'https://api.hyperliquid.xyz/info',
+          data: {
+            type: 'userState',
+            user: apiKey // Using apiKey as the user address
+          }
+        });
+        
+        // Check if the response contains expected data structure
+        if (!response.data) {
+          throw new Error('Invalid response from Hyperliquid API');
         }
-      });
+        
+        // Store API keys (in memory only - would use secure storage in production)
+        const userId = 'user123'; // In production, this would be the authenticated user's ID
+        apiKeys[userId] = {
+          exchange,
+          apiKey,
+          secretKey
+        };
+        
+        return res.json({
+          success: true,
+          message: 'Successfully connected to Hyperliquid',
+          data: {
+            exchange: 'hyperliquid',
+            accountInfo: response.data
+          }
+        });
+      } catch (error) {
+        console.error('Hyperliquid API error:', error.response ? error.response.data : error.message);
+        
+        // Handle specific Hyperliquid error cases
+        let errorMessage = 'Failed to connect to Hyperliquid';
+        let statusCode = 400;
+        
+        if (error.response) {
+          // API returned an error response
+          if (error.response.status === 403) {
+            errorMessage = 'Access denied. Please check your API key permissions.';
+          } else if (error.response.status === 429) {
+            errorMessage = 'Rate limit exceeded. Please try again later.';
+            statusCode = 429;
+          } else if (error.response.data && error.response.data.error) {
+            errorMessage = `Hyperliquid error: ${error.response.data.error}`;
+          }
+        } else if (error.code === 'ECONNABORTED') {
+          errorMessage = 'Connection timed out. Hyperliquid API may be experiencing issues.';
+          statusCode = 503;
+        } else if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED') {
+          errorMessage = 'Unable to reach Hyperliquid API. Please check your internet connection.';
+          statusCode = 503;
+        }
+        
+        return res.status(statusCode).json({
+          success: false,
+          message: errorMessage,
+          error: error.response ? error.response.data : error.message
+        });
+      }
     } else {
       return res.status(400).json({
         success: false,
@@ -177,6 +233,40 @@ app.get('/api/exchange/balances', async (req, res) => {
         success: true,
         data: balances
       });
+    } else if (userKeys.exchange === 'hyperliquid') {
+      try {
+        // Get user state from Hyperliquid
+        const response = await axios({
+          method: 'POST',
+          url: 'https://api.hyperliquid.xyz/info',
+          data: {
+            type: 'userState',
+            user: userKeys.apiKey // Using apiKey as the user address
+          }
+        });
+        
+        // Extract balances from the response
+        let balances = [];
+        if (response.data && response.data.assetPositions) {
+          balances = response.data.assetPositions.map(position => ({
+            asset: position.coin,
+            free: position.free,
+            locked: position.locked || '0'
+          }));
+        }
+        
+        return res.json({
+          success: true,
+          data: balances
+        });
+      } catch (error) {
+        console.error('Hyperliquid API error:', error.response ? error.response.data : error.message);
+        return res.status(400).json({
+          success: false,
+          message: 'Failed to fetch Hyperliquid balances',
+          error: error.response ? error.response.data : error.message
+        });
+      }
     } else {
       return res.status(400).json({
         success: false,

@@ -400,6 +400,19 @@ const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalPro
                     </a>
                   </p>
                 )}
+                {errorMessage.includes('Hyperliquid') && (
+                  <p className="mt-2 text-xs">
+                    Please ensure you're using a valid Hyperliquid wallet address as your API key.
+                    <a 
+                      href="https://hyperliquid.xyz/docs" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="block mt-1 text-blue-400 hover:text-blue-300 underline"
+                    >
+                      View Hyperliquid Documentation
+                    </a>
+                  </p>
+                )}
               </div>
             </div>
           )}
