@@ -5,8 +5,8 @@
 
 import CryptoJS from 'crypto-js';
 
-// Encryption key for storing API keys (in a real app, this would be more securely managed)
-const ENCRYPTION_KEY = 'TotalDEGEN_Secure_Key_2025';
+// Encryption key for storing API keys - exactly 32 bytes (256 bits) for AES-256
+const ENCRYPTION_KEY = 'TotalDEGEN_Secure_Key_32_Bytes_Long!';
 
 interface BinanceCredentials {
   apiKey: string;
@@ -21,15 +21,42 @@ interface BinanceSession {
 export class BinanceClient {
   private static SESSION_KEY = 'binance_session';
   private credentials: BinanceCredentials | null = null;
+  private serverTimeOffset = 0;
 
   constructor() {
     this.loadSession();
+    this.syncServerTime();
+  }
+
+  /**
+   * Synchronize with Binance server time to prevent timestamp errors
+   */
+  private async syncServerTime() {
+    try {
+      const response = await fetch('https://api.binance.com/api/v3/time');
+      const data = await response.json();
+      const serverTime = data.serverTime;
+      this.serverTimeOffset = serverTime - Date.now();
+      console.log('Server time synced, offset:', this.serverTimeOffset);
+    } catch (error) {
+      console.error('Failed to sync server time:', error);
+    }
   }
 
   /**
    * Store API credentials securely in localStorage
    */
   public storeCredentials(apiKey: string, secretKey: string): void {
+    // Validate API key format
+    if (!apiKey || apiKey.length < 10) {
+      throw new Error('Invalid API key format');
+    }
+    
+    // Validate Secret key format
+    if (!secretKey || secretKey.length < 10) {
+      throw new Error('Invalid Secret key format');
+    }
+
     const credentials: BinanceCredentials = { apiKey, secretKey };
     const encrypted = this.encrypt(JSON.stringify(credentials));
     
@@ -306,8 +333,8 @@ export class BinanceClient {
     
     const { apiKey, secretKey } = this.credentials;
     
-    // Add timestamp to params
-    const timestamp = Date.now();
+    // Add timestamp to params with server time offset
+    const timestamp = Date.now() + this.serverTimeOffset;
     const queryParams = {
       ...params,
       timestamp
@@ -323,37 +350,84 @@ export class BinanceClient {
     
     // Build URL
     const baseUrl = futures ? 'https://fapi.binance.com' : 'https://api.binance.com';
-    const url = `${baseUrl}${endpoint}?${queryString}&signature=${signature}`;
+    const targetUrl = `${baseUrl}${endpoint}?${queryString}&signature=${signature}`;
     
-    // Make request
-    const response = await fetch(url, {
-      method,
-      headers: {
-        'X-MBX-APIKEY': apiKey
+    // Use a CORS proxy for browser requests
+    const corsProxyUrl = 'https://cors-anywhere.herokuapp.com/';
+    const url = corsProxyUrl + targetUrl;
+    
+    try {
+      // Make request
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'X-MBX-APIKEY': apiKey,
+          'Origin': 'https://total-degen.com'
+        }
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Binance API error: ${JSON.stringify(errorData)}`);
       }
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(`Binance API error: ${JSON.stringify(errorData)}`);
+      
+      return response.json();
+    } catch (error) {
+      console.error('Binance API request failed:', error);
+      throw error;
     }
-    
-    return response.json();
   }
 
   /**
    * Encrypt data using AES
    */
   private encrypt(data: string): string {
-    return CryptoJS.AES.encrypt(data, ENCRYPTION_KEY).toString();
+    // Generate a random IV
+    const iv = CryptoJS.lib.WordArray.random(16);
+    
+    // Use the proper key format
+    const key = CryptoJS.enc.Utf8.parse(ENCRYPTION_KEY);
+    
+    // Encrypt with AES in CBC mode with proper IV
+    const encrypted = CryptoJS.AES.encrypt(data, key, {
+      iv: iv,
+      padding: CryptoJS.pad.Pkcs7,
+      mode: CryptoJS.mode.CBC
+    });
+    
+    // Return IV + encrypted data
+    return iv.toString(CryptoJS.enc.Hex) + ':' + encrypted.toString();
   }
 
   /**
    * Decrypt data using AES
    */
   private decrypt(encrypted: string): string {
-    const bytes = CryptoJS.AES.decrypt(encrypted, ENCRYPTION_KEY);
-    return bytes.toString(CryptoJS.enc.Utf8);
+    try {
+      // Split IV and encrypted data
+      const parts = encrypted.split(':');
+      if (parts.length !== 2) throw new Error('Invalid encrypted format');
+      
+      const iv = CryptoJS.enc.Hex.parse(parts[0]);
+      const encryptedData = parts[1];
+      
+      // Use the proper key format
+      const key = CryptoJS.enc.Utf8.parse(ENCRYPTION_KEY);
+      
+      // Decrypt
+      const decrypted = CryptoJS.AES.decrypt(encryptedData, key, {
+        iv: iv,
+        padding: CryptoJS.pad.Pkcs7,
+        mode: CryptoJS.mode.CBC
+      });
+      
+      return decrypted.toString(CryptoJS.enc.Utf8);
+    } catch (error) {
+      console.error('Decryption error:', error);
+      // Clear the invalid session
+      this.clearSession();
+      throw new Error('Failed to decrypt data');
+    }
   }
 }
 
