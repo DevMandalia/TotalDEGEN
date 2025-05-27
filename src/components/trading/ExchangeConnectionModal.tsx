@@ -1,551 +1,245 @@
-import { useState, useEffect } from "react";
-import { X, Shield, Wifi, Link, Eye, EyeOff, CheckCircle, AlertCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useToast } from "@/hooks/use-toast";
-import { api } from "../../lib/api";
+import React, { useState, useEffect } from 'react';
+import {
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  Button,
+  FormControl,
+  FormLabel,
+  Input,
+  Select,
+  VStack,
+  HStack,
+  Text,
+  useToast,
+  Box,
+  Flex,
+  Icon,
+  Divider
+} from '@chakra-ui/react';
+import { FaKey, FaExchangeAlt, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import { binanceClient } from '../../lib/BinanceClient';
 
 interface ExchangeConnectionModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onConnectionSuccess: () => void;
 }
 
-interface Exchange {
-  id: string;
-  name: string;
-  enabled: boolean;
-}
-
-interface ConnectionState {
-  connected: boolean;
-  exchange: string;
-  sessionToken: string;
-  isReadOnly: boolean;
-}
-
-const ExchangeConnectionModal = ({ isOpen, onClose }: ExchangeConnectionModalProps) => {
-  const [selectedExchange, setSelectedExchange] = useState("");
-  const [connectionMode, setConnectionMode] = useState("Live");
-  const [apiKey, setApiKey] = useState("");
-  const [secretKey, setSecretKey] = useState("");
-  const [showApiKey, setShowApiKey] = useState(false);
-  const [showSecretKey, setShowSecretKey] = useState(false);
-  const [exchanges, setExchanges] = useState<Exchange[]>([]);
+const ExchangeConnectionModal: React.FC<ExchangeConnectionModalProps> = ({
+  isOpen,
+  onClose,
+  onConnectionSuccess
+}) => {
+  const [exchange, setExchange] = useState('binance');
+  const [apiKey, setApiKey] = useState('');
+  const [secretKey, setSecretKey] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState<'idle' | 'connecting' | 'success' | 'error'>('idle');
-  const [errorMessage, setErrorMessage] = useState("");
-  const [connectionState, setConnectionState] = useState<ConnectionState | null>(null);
-  const { toast } = useToast();
-
-  const connectionModes = [
-    { value: "Live", label: "Live Trading", description: "Real money trading" },
-    { value: "Testnet", label: "Testnet", description: "Test environment with fake money" },
-    { value: "Paper Trading", label: "Paper Trading", description: "Simulated trading" }
-  ];
+  const [isConnected, setIsConnected] = useState(false);
+  const [connectionError, setConnectionError] = useState('');
   
-  // Test API health on component mount
+  const toast = useToast();
+
+  // Check if already connected on mount
   useEffect(() => {
-    console.log('Modal opened, testing API connection...');
-    testApiHealth();
-  }, []);
-
-  const setApiError = (message: string) => {
-    setErrorMessage(message);
-  };
-
-  const testApiHealth = async () => {
-    try {
-      console.log('=== TESTING API HEALTH ===');
-      // Using centralized API client
-      
-      setIsLoading(true);
-      const healthData = await api.checkHealth();
-      
-      if (healthData && healthData.status === 'ok') {
-        console.log('API is healthy, fetching exchanges...');
-        toast({
-          title: "API Connected",
-          description: "Successfully connected to API server",
-        });
-        
-        fetchSupportedExchanges();
-      } else {
-        console.error('=== API HEALTH CHECK FAILED ===');
-        console.error('Error details:', healthData);
-        setApiError("API server is not responding correctly");
-        
-        // Show toast and use fallback exchange list
-        toast({
-          title: "API Connection Failed",
-          description: "Using fallback exchange list",
-          variant: "destructive",
-        });
-        
-        // Fallback to basic exchange list
-        setExchanges([
-          { id: "binance", name: "Binance", enabled: true },
-          { id: "hyperliquid", name: "Hyperliquid", enabled: true }
-        ]);
+    const checkConnection = async () => {
+      if (binanceClient.isConnected()) {
+        try {
+          const connected = await binanceClient.testConnection();
+          setIsConnected(connected);
+        } catch (error) {
+          console.error('Connection test failed:', error);
+          setIsConnected(false);
+        }
       }
-    } catch (error) {
-      console.error('=== API HEALTH CHECK FAILED ===');
-      console.error('Error details:', error);
-      setApiError("Network Error");
-      
-      // Show toast and use fallback exchange list
-      toast({
-        title: "API Connection Failed",
-        description: "Using fallback exchange list",
-        variant: "destructive",
-      });
-      
-      // Fallback to basic exchange list
-      setExchanges([
-        { id: "binance", name: "Binance", enabled: true },
-        { id: "hyperliquid", name: "Hyperliquid", enabled: true }
-      ]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const fetchSupportedExchanges = async () => {
-    setIsLoading(true);
-    setErrorMessage("");
+    };
     
-    try {
-      console.log('=== FETCHING EXCHANGES ===');
-      
-      const exchanges = await api.getSupportedExchanges();
-      
-      // Map to our Exchange interface if needed
-      const mappedExchanges: Exchange[] = exchanges.map((ex: any) => ({
-        id: ex.id || ex.name.toLowerCase(),
-        name: ex.name,
-        enabled: ex.enabled !== false // Default to enabled unless explicitly disabled
-      }));
-      
-      setExchanges(mappedExchanges);
-      console.log('Successfully loaded exchanges:', mappedExchanges);
-      
-      toast({
-        title: "Exchanges Loaded",
-        description: `Loaded ${mappedExchanges.length} supported exchanges`,
-      });
-      
-    } catch (error) {
-      console.error('=== EXCHANGE FETCH FAILED ===');
-      console.error('Error details:', error);
-      
-      if (error instanceof Error) {
-        setErrorMessage(`Failed to fetch exchanges: ${error.message}`);
-      } else {
-        setErrorMessage('Unknown error fetching exchanges');
-      }
-      
-      // Fallback to basic exchange list
-      console.log('Using fallback exchange list');
-      setExchanges([
-        { id: "binance", name: "Binance", enabled: true },
-        { id: "hyperliquid", name: "Hyperliquid", enabled: true }
-      ]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    checkConnection();
+  }, [isOpen]);
 
-  // Add function to check read-only status
-  const checkReadOnlyStatus = async (sessionToken: string) => {
-    try {
-      console.log('=== CHECKING API KEY PERMISSIONS ===');
-      
-      // Using mock implementation since this endpoint isn't in our backend yet
-      const result = { success: true, isReadOnly: false };
-      
-      if (result.success) {
-        console.log('API key read-only status:', result.isReadOnly);
-        return result.isReadOnly;
-      } else {
-        throw new Error("Failed to check account permissions");
-      }
-    } catch (error) {
-      console.error('=== PERMISSION CHECK FAILED ===');
-      console.error('Error details:', error);
-      // Don't fail the entire connection for permission check issues
-      return false; // Assume not read-only if we can't determine
-    }
-  };
-
-  // Add function to save connection state
-  const saveConnectionState = (state: ConnectionState) => {
-    setConnectionState(state);
-    console.log('Connection state saved:', state);
-    
-    // Store in localStorage for persistence
-    localStorage.setItem('exchangeConnection', JSON.stringify(state));
-  };
-
-  // Add function to show read-only warning
-  const showReadOnlyWarning = () => {
-    toast({
-      title: "Read-Only API Key Detected",
-      description: "Your API key has read-only permissions. Trading functions will be disabled.",
-      variant: "destructive",
-    });
-  };
-
-  const testConnection = async () => {
-    if (!selectedExchange || (connectionMode !== "Paper Trading" && (!apiKey || !secretKey))) {
-      setErrorMessage("Please fill in all required fields");
+  const handleConnect = async () => {
+    if (!apiKey || !secretKey) {
+      setConnectionError('API Key and Secret Key are required');
       return;
     }
 
     setIsLoading(true);
-    setConnectionStatus('connecting');
-    setErrorMessage("");
+    setConnectionError('');
 
     try {
-      console.log('=== TESTING CONNECTION ===');
-      console.log('Exchange:', selectedExchange);
-      console.log('Mode:', connectionMode);
+      // Store credentials in the client
+      binanceClient.storeCredentials(apiKey, secretKey);
       
-      if (connectionMode === "Paper Trading") {
-        // For paper trading, just simulate success
-        console.log('Paper trading mode - simulating connection');
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        setConnectionStatus('success');
-        console.log('Paper trading connection successful');
-        
-        // Save paper trading connection state
-        saveConnectionState({
-          connected: true,
-          exchange: selectedExchange.toLowerCase(),
-          sessionToken: 'paper-trading-token',
-          isReadOnly: false
-        });
-        
+      // Test the connection
+      const connected = await binanceClient.testConnection();
+      
+      if (connected) {
+        setIsConnected(true);
         toast({
-          title: "Connection Successful",
-          description: `Successfully connected to ${selectedExchange} in Paper Trading mode`,
+          title: 'Connection Successful',
+          description: `Successfully connected to ${exchange === 'binance' ? 'Binance' : 'Hyperliquid'}`,
+          status: 'success',
+          duration: 5000,
+          isClosable: true,
         });
-      } else {
-        // For live/testnet, test actual connection using backend API
-        console.log(`Testing ${connectionMode} connection via backend API`);
         
-        // Use the API client to connect to the exchange
-        // If API key and secret are not provided in the form, use the ones from env variables
-        const useApiKey = apiKey || import.meta.env.VITE_BINANCE_API_KEY;
-        const useSecretKey = secretKey || import.meta.env.VITE_BINANCE_SECRET_KEY;
+        // Clear form
+        setApiKey('');
+        setSecretKey('');
         
-        const result = await api.connectExchange(
-          selectedExchange.toLowerCase(),
-          useApiKey,
-          useSecretKey,
-          connectionMode === "Testnet"
-        );
+        // Notify parent component
+        onConnectionSuccess();
         
-        if (result.success) {
-          // Store the session token for subsequent authenticated requests
-          const sessionToken = result.token;
-          console.log('Connection successful, received session token');
-          
-          // Check if API key is read-only
-          const isReadOnly = await checkReadOnlyStatus(sessionToken);
-          
-          // Store both the session token and read-only status
-          saveConnectionState({
-            connected: true,
-            exchange: selectedExchange.toLowerCase(),
-            sessionToken,
-            isReadOnly
-          });
-          
-          setConnectionStatus('success');
-          
-          // Update UI based on read-only status
-          if (isReadOnly) {
-            showReadOnlyWarning();
-          }
-          
-          toast({
-            title: "Connection Successful",
-            description: `Successfully connected to ${selectedExchange} in ${connectionMode} mode${isReadOnly ? ' (Read-Only)' : ''}`,
-          });
-        } else {
-          // Handle connection failure
-          throw new Error(result.error || "Failed to connect to exchange");
-        }
-      }
-      
-      // Clear form after successful connection
-      setTimeout(() => {
-        setApiKey("");
-        setSecretKey("");
-        setConnectionStatus('idle');
+        // Close modal
         onClose();
-      }, 2000);
-      
-    } catch (error) {
-      console.error('=== CONNECTION ERROR ===');
-      console.error('Error details:', error);
-      setConnectionStatus('error');
-      
-      let errorMsg = 'Connection failed';
-      let errorType = 'general';
-      
-      if (error instanceof Error) {
-        if (error.name === 'AbortError') {
-          errorMsg = 'Connection timeout (30s)';
-          errorType = 'timeout';
-        } else {
-          errorMsg = error.message;
-          
-          // Check for geographic restriction errors
-          if (error.message && (
-              error.message.includes('restricted location') || 
-              error.message.includes('geographic restriction') ||
-              error.message.includes('Service unavailable from a restricted location')
-          )) {
-            errorType = 'geographic';
-            errorMsg = 'This service is unavailable in your current location due to Binance geographic restrictions. Please check Binance Terms of Service for details.';
-          }
-          // Check for API key permission errors
-          else if (error.message && (
-              error.message.includes('API key') || 
-              error.message.includes('permission') ||
-              error.message.includes('Invalid API-key')
-          )) {
-            errorType = 'permission';
-            errorMsg = 'API key error: Please check that your API key has the correct permissions and is valid.';
-          }
-        }
+      } else {
+        setConnectionError('Failed to connect. Please check your API keys and try again.');
+        binanceClient.clearSession();
       }
-      
-      setErrorMessage(errorMsg);
-      
-      toast({
-        title: "Connection Failed",
-        description: errorMsg,
-        variant: "destructive",
-      });
+    } catch (error) {
+      console.error('Connection error:', error);
+      setConnectionError(`Connection Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      binanceClient.clearSession();
     } finally {
       setIsLoading(false);
     }
   };
 
-  const getConnectionButtonText = () => {
-    switch (connectionStatus) {
-      case 'connecting':
-        return 'Connecting...';
-      case 'success':
-        return 'Connected!';
-      case 'error':
-        return 'Try Again';
-      default:
-        return 'Connect Exchange';
-    }
-  };
-
-  const getConnectionButtonColor = () => {
-    switch (connectionStatus) {
-      case 'success':
-        return 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600';
-      case 'error':
-        return 'bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600';
-      default:
-        return 'bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600';
-    }
+  const handleDisconnect = () => {
+    binanceClient.clearSession();
+    setIsConnected(false);
+    toast({
+      title: 'Disconnected',
+      description: `Successfully disconnected from ${exchange === 'binance' ? 'Binance' : 'Hyperliquid'}`,
+      status: 'info',
+      duration: 5000,
+      isClosable: true,
+    });
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-gray-900 border border-gray-700 text-white max-w-md">
-        <DialogHeader className="space-y-4">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-pink-500 rounded-full flex items-center justify-center">
-              <Link className="w-3 h-3 text-white" />
-            </div>
-            <DialogTitle className="text-lg font-semibold">Exchange Account Connection</DialogTitle>
-          </div>
-        </DialogHeader>
-
-        <div className="space-y-6">
-          {/* Security Notice */}
-          <div className="bg-gray-800 rounded-lg p-3 flex items-start gap-3">
-            <Shield className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
-            <p className="text-sm text-gray-300">
-              Your API keys are encrypted and stored securely. We never store your secret keys in plain text.
-            </p>
-          </div>
-
-          {/* Error Message */}
-          {errorMessage && (
-            <div className="bg-red-900/30 border border-red-500/50 rounded-lg p-3 flex items-start gap-3">
-              <AlertCircle className="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" />
-              <div className="text-sm text-red-300">
-                <p className="font-medium mb-1">Connection Error</p>
-                <p>{errorMessage}</p>
-                {errorMessage.includes('geographic restrictions') && (
-                  <p className="mt-2 text-xs">
-                    This is a limitation of Binance's terms of service, not an issue with your credentials or our application.
-                    <a 
-                      href="https://www.binance.com/en/terms" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="block mt-1 text-blue-400 hover:text-blue-300 underline"
-                    >
-                      View Binance Terms of Service
-                    </a>
-                  </p>
-                )}
-                {errorMessage.includes('Hyperliquid') && (
-                  <p className="mt-2 text-xs">
-                    Please ensure you're using a valid Hyperliquid wallet address as your API key.
-                    <a 
-                      href="https://hyperliquid.xyz/docs" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="block mt-1 text-blue-400 hover:text-blue-300 underline"
-                    >
-                      View Hyperliquid Documentation
-                    </a>
-                  </p>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Current Connections */}
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <Wifi className="w-4 h-4 text-gray-400" />
-              <h3 className="font-medium text-white">Current Connections</h3>
-            </div>
-            <div className="bg-gray-800 rounded-lg p-3 flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
-                <span className="text-sm text-gray-300">No active connections</span>
-              </div>
-              <span className="text-xs text-red-400">Disconnected</span>
-            </div>
-          </div>
-
-          {/* Add New Connection */}
-          <div>
-            <div className="flex items-center gap-2 mb-4">
-              <Link className="w-4 h-4 text-gray-400" />
-              <h3 className="font-medium text-white">Add New Exchange Connection</h3>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm text-gray-400 mb-2">Connection Mode</label>
-                <Select value={connectionMode} onValueChange={setConnectionMode}>
-                  <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
-                    <SelectValue placeholder="Select connection mode" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-gray-800 border-gray-700">
-                    {connectionModes.map((mode) => (
-                      <SelectItem key={mode.value} value={mode.value} className="text-white">
-                        <div>
-                          <div>{mode.label}</div>
-                          <div className="text-xs text-gray-400">{mode.description}</div>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <label className="block text-sm text-gray-400 mb-2">
-                  Exchange Platform {isLoading && <span className="text-blue-400">(Loading...)</span>}
-                </label>
-                <Select value={selectedExchange} onValueChange={setSelectedExchange} disabled={isLoading}>
-                  <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
-                    <SelectValue placeholder="Select an exchange" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-gray-800 border-gray-700">
-                    {exchanges.map((exchange) => (
-                      <SelectItem 
-                        key={exchange.id} 
-                        value={exchange.name} 
-                        className="text-white"
-                        disabled={!exchange.enabled}
-                      >
-                        {exchange.name} {!exchange.enabled && "(Coming Soon)"}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {connectionMode !== "Paper Trading" && (
-                <>
-                  <div>
-                    <label className="block text-sm text-gray-400 mb-2">API Key</label>
-                    <div className="relative">
-                      <Input
-                        type={showApiKey ? "text" : "password"}
-                        value={apiKey}
-                        onChange={(e) => setApiKey(e.target.value)}
-                        placeholder="Enter your API key"
-                        className="bg-gray-800 border-gray-700 text-white pr-10"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowApiKey(!showApiKey)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
-                      >
-                        {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm text-gray-400 mb-2">Secret Key</label>
-                    <div className="relative">
-                      <Input
-                        type={showSecretKey ? "text" : "password"}
-                        value={secretKey}
-                        onChange={(e) => setSecretKey(e.target.value)}
-                        placeholder="Enter your secret key"
-                        className="bg-gray-800 border-gray-700 text-white pr-10"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowSecretKey(!showSecretKey)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
-                      >
-                        {showSecretKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    </div>
-                  </div>
-                </>
-              )}
-
-              {/* Security Tips */}
-              <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-3 flex items-start gap-3">
-                <CheckCircle className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" />
-                <p className="text-xs text-yellow-300">
-                  Security Tips: Only use API keys with trading permissions. Never share your secret key. Enable IP restrictions on your exchange account.
-                </p>
-              </div>
-
+    <Modal isOpen={isOpen} onClose={onClose} size="md">
+      <ModalOverlay backdropFilter="blur(10px)" />
+      <ModalContent bg="gray.900" borderColor="gray.700" borderWidth="1px">
+        <ModalHeader color="white">
+          <Flex align="center">
+            <Icon as={FaExchangeAlt} mr={2} />
+            Connect to Exchange
+          </Flex>
+        </ModalHeader>
+        <ModalCloseButton color="white" />
+        <ModalBody>
+          {isConnected ? (
+            <Box textAlign="center" py={4}>
+              <Icon as={FaCheckCircle} color="green.400" boxSize={12} mb={4} />
+              <Text color="white" fontSize="lg" fontWeight="bold" mb={2}>
+                Connected to {exchange === 'binance' ? 'Binance' : 'Hyperliquid'}
+              </Text>
+              <Text color="gray.400" mb={4}>
+                Your API connection is active and working properly.
+              </Text>
               <Button
-                onClick={testConnection}
-                disabled={isLoading || connectionStatus === 'connecting' || connectionStatus === 'success'}
-                className={`w-full py-6 ${getConnectionButtonColor()} text-white font-medium transition-all duration-300`}
+                colorScheme="red"
+                onClick={handleDisconnect}
+                leftIcon={<FaTimesCircle />}
               >
-                {getConnectionButtonText()}
+                Disconnect
               </Button>
-            </div>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+            </Box>
+          ) : (
+            <VStack spacing={4} align="stretch">
+              <FormControl>
+                <FormLabel color="gray.300">Exchange</FormLabel>
+                <Select
+                  value={exchange}
+                  onChange={(e) => setExchange(e.target.value)}
+                  bg="gray.800"
+                  color="white"
+                  borderColor="gray.600"
+                >
+                  <option value="binance">Binance</option>
+                  <option value="hyperliquid">Hyperliquid</option>
+                </Select>
+              </FormControl>
+              
+              <Divider borderColor="gray.700" />
+              
+              <Box p={4} bg="gray.800" borderRadius="md">
+                <Text color="gray.300" mb={3} fontSize="sm">
+                  {exchange === 'binance' 
+                    ? 'Enter your Binance API credentials. For security, use read-only API keys.'
+                    : 'Enter your Hyperliquid API credentials.'}
+                </Text>
+                
+                <FormControl mb={3}>
+                  <FormLabel color="gray.300">API Key</FormLabel>
+                  <Input
+                    placeholder="Enter your API key"
+                    value={apiKey}
+                    onChange={(e) => setApiKey(e.target.value)}
+                    bg="gray.700"
+                    color="white"
+                    borderColor="gray.600"
+                    _hover={{ borderColor: 'blue.400' }}
+                    _focus={{ borderColor: 'blue.400', boxShadow: '0 0 0 1px #4299E1' }}
+                  />
+                </FormControl>
+                
+                <FormControl>
+                  <FormLabel color="gray.300">Secret Key</FormLabel>
+                  <Input
+                    placeholder="Enter your secret key"
+                    type="password"
+                    value={secretKey}
+                    onChange={(e) => setSecretKey(e.target.value)}
+                    bg="gray.700"
+                    color="white"
+                    borderColor="gray.600"
+                    _hover={{ borderColor: 'blue.400' }}
+                    _focus={{ borderColor: 'blue.400', boxShadow: '0 0 0 1px #4299E1' }}
+                  />
+                </FormControl>
+              </Box>
+              
+              {connectionError && (
+                <Box bg="red.900" p={3} borderRadius="md">
+                  <Text color="red.200">{connectionError}</Text>
+                </Box>
+              )}
+            </VStack>
+          )}
+        </ModalBody>
+
+        <ModalFooter>
+          {!isConnected && (
+            <HStack spacing={3} width="100%">
+              <Button variant="outline" colorScheme="blue" onClick={onClose} flex="1">
+                Cancel
+              </Button>
+              <Button 
+                colorScheme="blue" 
+                onClick={handleConnect} 
+                isLoading={isLoading}
+                loadingText="Connecting"
+                leftIcon={<FaKey />}
+                flex="1"
+              >
+                Connect
+              </Button>
+            </HStack>
+          )}
+          {isConnected && (
+            <Button variant="ghost" colorScheme="blue" onClick={onClose}>
+              Close
+            </Button>
+          )}
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
   );
 };
 

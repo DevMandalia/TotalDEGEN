@@ -1,118 +1,126 @@
+import React, { useState, useEffect } from 'react';
+import {
+  Box,
+  Flex,
+  Text,
+  Table,
+  Thead,
+  Tbody,
+  Tr,
+  Th,
+  Td,
+  Badge,
+  Spinner,
+  Center,
+  Icon,
+  VStack
+} from '@chakra-ui/react';
+import { FaExclamationTriangle } from 'react-icons/fa';
+import { binanceClient } from '../../lib/BinanceClient';
 
-import { ArrowUpRight, ArrowDownRight } from "lucide-react";
-import { Card } from "@/components/ui/card";
+interface OpenPositionsProps {
+  positions: any[];
+}
 
-const OpenPositions = () => {
-  const positions = [
-    {
-      symbol: "BTC",
-      side: "LONG",
-      size: "0.0234",
-      entryPrice: 94500.00,
-      currentPrice: 97842.91,
-      leverage: "10x",
-      breakeven: 94650.00,
-      liquidation: 85050.00,
-      pnl: 782.45,
-      pnlPercent: 8.27,
-      isProfit: true
-    },
-    {
-      symbol: "ETH",
-      side: "SHORT",
-      size: "2.456",
-      entryPrice: 3500.00,
-      currentPrice: 3456.78,
-      leverage: "5x",
-      breakeven: 3480.00,
-      liquidation: 4200.00,
-      pnl: 531.23,
-      pnlPercent: 6.19,
-      isProfit: true
-    },
-    {
-      symbol: "SOL",
-      side: "LONG",
-      size: "15.67",
-      entryPrice: 220.00,
-      currentPrice: 234.56,
-      leverage: "3x",
-      breakeven: 223.30,
-      liquidation: 146.67,
-      pnl: 228.20,
-      pnlPercent: 6.62,
-      isProfit: true
+const OpenPositions: React.FC<OpenPositionsProps> = ({ positions }) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [localPositions, setLocalPositions] = useState<any[]>([]);
+
+  useEffect(() => {
+    setLocalPositions(positions);
+  }, [positions]);
+
+  // Refresh positions data
+  const refreshPositions = async () => {
+    if (!binanceClient.isConnected()) return;
+    
+    setIsLoading(true);
+    try {
+      const freshPositions = await binanceClient.getPositions();
+      setLocalPositions(freshPositions);
+    } catch (error) {
+      console.error('Error refreshing positions:', error);
+    } finally {
+      setIsLoading(false);
     }
-  ];
+  };
+
+  // Auto-refresh positions every 30 seconds
+  useEffect(() => {
+    if (!binanceClient.isConnected()) return;
+    
+    const interval = setInterval(() => {
+      refreshPositions();
+    }, 30000);
+    
+    return () => clearInterval(interval);
+  }, []);
+
+  if (isLoading) {
+    return (
+      <Center py={8}>
+        <Spinner size="lg" color="blue.400" />
+      </Center>
+    );
+  }
+
+  if (!localPositions || localPositions.length === 0) {
+    return (
+      <Center py={8}>
+        <VStack spacing={3}>
+          <Icon as={FaExclamationTriangle} boxSize={8} color="gray.500" />
+          <Text color="gray.500" textAlign="center">
+            No open positions found
+          </Text>
+        </VStack>
+      </Center>
+    );
+  }
 
   return (
-    <Card className="bg-gray-900 border border-gray-800 p-6 font-mono">
-      <h3 className="text-lg font-bold text-white mb-6 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">Open Positions</h3>
-      
-      <div className="space-y-4">
-        {positions.map((position, index) => (
-          <div key={index} className="grid grid-cols-8 gap-4 py-4 border-b border-gray-800 last:border-b-0 text-sm bg-black rounded-lg px-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                <span className="text-xs font-bold text-white">{position.symbol}</span>
-              </div>
-              <div>
-                <div className="font-bold text-white">{position.symbol}</div>
-                <div className={`text-xs font-medium ${position.side === 'LONG' ? 'text-green-400' : 'text-red-400'}`}>
-                  {position.side}
-                </div>
-              </div>
-            </div>
+    <Box overflowX="auto">
+      <Table variant="simple" size="sm">
+        <Thead>
+          <Tr>
+            <Th color="gray.400">Symbol</Th>
+            <Th color="gray.400" isNumeric>Size</Th>
+            <Th color="gray.400" isNumeric>Entry Price</Th>
+            <Th color="gray.400" isNumeric>Mark Price</Th>
+            <Th color="gray.400" isNumeric>PnL</Th>
+          </Tr>
+        </Thead>
+        <Tbody>
+          {localPositions.map((position, index) => {
+            const positionAmt = parseFloat(position.positionAmt);
+            const entryPrice = parseFloat(position.entryPrice);
+            const markPrice = parseFloat(position.markPrice);
+            const pnl = parseFloat(position.unRealizedProfit);
+            const isLong = positionAmt > 0;
             
-            <div>
-              <div className="text-gray-400 text-xs font-medium">Size</div>
-              <div className="text-white font-medium">{position.size}</div>
-            </div>
-            
-            <div>
-              <div className="text-gray-400 text-xs font-medium">Entry</div>
-              <div className="text-white font-medium">${position.entryPrice.toLocaleString()}</div>
-            </div>
-            
-            <div>
-              <div className="text-gray-400 text-xs font-medium">Current</div>
-              <div className="text-white font-medium">${position.currentPrice.toLocaleString()}</div>
-            </div>
-            
-            <div>
-              <div className="text-gray-400 text-xs font-medium">Leverage</div>
-              <div className="text-blue-400 font-bold">{position.leverage}</div>
-            </div>
-            
-            <div>
-              <div className="text-gray-400 text-xs font-medium">Breakeven</div>
-              <div className="text-yellow-400 font-medium">${position.breakeven.toLocaleString()}</div>
-            </div>
-            
-            <div>
-              <div className="text-gray-400 text-xs font-medium">Liquidation</div>
-              <div className="text-red-400 font-medium">${position.liquidation.toLocaleString()}</div>
-            </div>
-            
-            <div className="text-right">
-              <div className={`flex items-center gap-1 justify-end font-bold ${
-                position.isProfit ? 'text-green-400' : 'text-red-400'
-              }`}>
-                {position.isProfit ? (
-                  <ArrowUpRight className="w-4 h-4" />
-                ) : (
-                  <ArrowDownRight className="w-4 h-4" />
-                )}
-                <div>
-                  <div className="text-lg">${position.pnl.toFixed(2)}</div>
-                  <div className="text-sm">({position.pnlPercent}%)</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </Card>
+            return (
+              <Tr key={index}>
+                <Td>
+                  <Flex align="center">
+                    <Badge colorScheme={isLong ? 'green' : 'red'} mr={2}>
+                      {isLong ? 'LONG' : 'SHORT'}
+                    </Badge>
+                    <Text fontWeight="medium">{position.symbol}</Text>
+                  </Flex>
+                </Td>
+                <Td isNumeric fontWeight="medium">
+                  {Math.abs(positionAmt).toFixed(4)}
+                </Td>
+                <Td isNumeric>{entryPrice.toFixed(2)}</Td>
+                <Td isNumeric>{markPrice.toFixed(2)}</Td>
+                <Td isNumeric color={pnl >= 0 ? 'green.400' : 'red.400'} fontWeight="bold">
+                  {pnl >= 0 ? '+' : ''}{pnl.toFixed(2)}
+                </Td>
+              </Tr>
+            );
+          })}
+        </Tbody>
+      </Table>
+    </Box>
   );
 };
 
