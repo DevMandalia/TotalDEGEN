@@ -15,11 +15,11 @@ import {
   VStack,
   HStack,
   Text,
-  useToast,
+  useToast as useChakraToast,
   Box,
   Flex,
   Icon,
-  Divider
+  Divider as ChakraDivider
 } from '@chakra-ui/react';
 import { Key, ArrowLeftRight, CheckCircle, XCircle } from 'lucide-react';
 import { binanceClient } from '../../lib/BinanceClient';
@@ -42,7 +42,7 @@ const ExchangeConnectionModal: React.FC<ExchangeConnectionModalProps> = ({
   const [isConnected, setIsConnected] = useState(false);
   const [connectionError, setConnectionError] = useState('');
   
-  const toast = useToast();
+  const toast = useChakraToast();
 
   // Check if already connected on mount
   useEffect(() => {
@@ -151,7 +151,7 @@ const ExchangeConnectionModal: React.FC<ExchangeConnectionModalProps> = ({
               </Button>
             </Box>
           ) : (
-            <VStack spacing={4} align="stretch">
+            <VStack gap={4} align="stretch">
               <FormControl>
                 <FormLabel color="gray.300">Exchange</FormLabel>
                 <Select
@@ -166,7 +166,7 @@ const ExchangeConnectionModal: React.FC<ExchangeConnectionModalProps> = ({
                 </Select>
               </FormControl>
               
-              <Divider borderColor="gray.700" />
+              <ChakraDivider borderColor="gray.700" />
               
               <Box p={4} bg="gray.800" borderRadius="md">
                 <Text color="gray.300" mb={3} fontSize="sm">
@@ -216,7 +216,7 @@ const ExchangeConnectionModal: React.FC<ExchangeConnectionModalProps> = ({
 
         <ModalFooter>
           {!isConnected && (
-            <HStack spacing={3} width="100%">
+            <HStack gap={3} width="100%">
               <Button variant="outline" colorScheme="blue" onClick={onClose} flex="1">
                 Cancel
               </Button>

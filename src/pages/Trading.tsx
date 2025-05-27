@@ -12,8 +12,8 @@ import {
   HStack,
   VStack,
   Spinner,
-  useToast,
-  Divider
+  useToast as useChakraToast,
+  Divider as ChakraDivider
 } from '@chakra-ui/react';
 import { RefreshCw, ArrowLeftRight, Wallet } from 'lucide-react';
 import { LineChart } from 'lucide-react';
@@ -33,7 +33,7 @@ const Trading: React.FC = () => {
   const [positions, setPositions] = useState<any[]>([]);
   const [timeframe, setTimeframe] = useState('1d');
   
-  const toast = useToast();
+  const toast = useChakraToast();
 
   // Check connection status and load data on mount
   useEffect(() => {
@@ -152,15 +152,15 @@ const Trading: React.FC = () => {
 
   return (
     <Box bg="gray.900" minH="100vh" color="white">
-      <TradingNavigation />
+      <TradingNavigation onAccountClick={() => {}} />
       
       <Box maxW="1400px" mx="auto" px={4} py={6}>
         <Flex justify="space-between" align="center" mb={6}>
           <Heading size="lg">Trading Dashboard</Heading>
           
-          <HStack spacing={4}>
+          <HStack gap={4}>
             <Button
-              leftIcon={<RefreshCw />}
+              leftIcon={<Icon as={RefreshCw} />}
               colorScheme="blue"
               variant="outline"
               size="sm"
@@ -173,7 +173,7 @@ const Trading: React.FC = () => {
             </Button>
             
             <Button
-              leftIcon={<ArrowLeftRight />}
+              leftIcon={<Icon as={ArrowLeftRight} />}
               colorScheme="blue"
               size="sm"
               onClick={onOpen}
@@ -185,8 +185,8 @@ const Trading: React.FC = () => {
         
         {isLoading ? (
           <Flex justify="center" align="center" h="60vh">
-            <VStack spacing={4}>
-              <Spinner size="xl" color="blue.400" thickness="4px" />
+            <VStack gap={4}>
+              <Spinner size="xl" color="blue.400" />
               <Text color="gray.400">Loading trading data...</Text>
             </VStack>
           </Flex>
@@ -208,7 +208,7 @@ const Trading: React.FC = () => {
             <Button
               colorScheme="blue"
               size="lg"
-              leftIcon={<ArrowLeftRight />}
+              leftIcon={<Icon as={ArrowLeftRight} />}
               onClick={onOpen}
             >
               Connect Exchange
@@ -236,7 +236,7 @@ const Trading: React.FC = () => {
                     </Flex>
                   </Heading>
                   
-                  <HStack spacing={2}>
+                  <HStack gap={2}>
                     <Button
                       size="xs"
                       colorScheme={timeframe === '1d' ? 'blue' : 'gray'}
@@ -313,7 +313,7 @@ const Trading: React.FC = () => {
                   </Heading>
                 </Flex>
                 
-                <Divider mb={4} borderColor="gray.700" />
+                <ChakraDivider mb={4} borderColor="gray.700" />
                 
                 <OpenPositions positions={positions} />
               </Box>

@@ -67,7 +67,7 @@ const OpenPositions: React.FC<OpenPositionsProps> = ({ positions }) => {
   if (!localPositions || localPositions.length === 0) {
     return (
       <Center py={8}>
-        <VStack spacing={3}>
+        <VStack gap={3}>
           <Icon as={AlertTriangle} color="yellow.400" />
           <Text color="gray.500" textAlign="center">
             No open positions found
