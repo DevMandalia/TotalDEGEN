@@ -15,7 +15,7 @@ import {
   useToast,
   Divider
 } from '@chakra-ui/react';
-import { FaExchangeAlt, FaSync, FaWallet } from 'react-icons/fa';
+import { RefreshCw, ArrowLeftRight, Wallet } from 'lucide-react';
 import { LineChart } from 'lucide-react';
 import ExchangeConnectionModal from '../components/trading/ExchangeConnectionModal';
 import TradingNavigation from '../components/trading/TradingNavigation';
@@ -160,7 +160,7 @@ const Trading: React.FC = () => {
           
           <HStack spacing={4}>
             <Button
-              leftIcon={<FaSync />}
+              leftIcon={<RefreshCw />}
               colorScheme="blue"
               variant="outline"
               size="sm"
@@ -173,7 +173,7 @@ const Trading: React.FC = () => {
             </Button>
             
             <Button
-              leftIcon={<FaExchangeAlt />}
+              leftIcon={<ArrowLeftRight />}
               colorScheme="blue"
               size="sm"
               onClick={onOpen}
@@ -200,7 +200,7 @@ const Trading: React.FC = () => {
             borderColor="gray.700"
             my={10}
           >
-            <Icon as={FaExchangeAlt} boxSize={12} color="blue.400" mb={4} />
+            <Icon as={ArrowLeftRight} boxSize={12} color="blue.400" mb={4} />
             <Heading size="md" mb={2}>Connect to an Exchange</Heading>
             <Text color="gray.400" mb={6}>
               Connect to Binance or Hyperliquid to view your portfolio and trading data.
@@ -208,7 +208,7 @@ const Trading: React.FC = () => {
             <Button
               colorScheme="blue"
               size="lg"
-              leftIcon={<FaExchangeAlt />}
+              leftIcon={<ArrowLeftRight />}
               onClick={onOpen}
             >
               Connect Exchange
@@ -307,7 +307,7 @@ const Trading: React.FC = () => {
                 <Flex justify="space-between" align="center" mb={4}>
                   <Heading size="md">
                     <Flex align="center">
-                      <Icon as={FaWallet} mr={2} color="blue.400" />
+                      <Icon as={Wallet} mr={2} color="blue.400" />
                       Open Positions
                     </Flex>
                   </Heading>
