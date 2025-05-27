@@ -21,7 +21,7 @@ import {
   Icon,
   Divider
 } from '@chakra-ui/react';
-import { FaKey, FaExchangeAlt, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import { Key, ArrowLeftRight, CheckCircle, XCircle } from 'lucide-react';
 import { binanceClient } from '../../lib/BinanceClient';
 
 interface ExchangeConnectionModalProps {
@@ -127,7 +127,7 @@ const ExchangeConnectionModal: React.FC<ExchangeConnectionModalProps> = ({
       <ModalContent bg="gray.900" borderColor="gray.700" borderWidth="1px">
         <ModalHeader color="white">
           <Flex align="center">
-            <Icon as={FaExchangeAlt} mr={2} />
+            <Icon as={ArrowLeftRight} mr={2} />
             Connect to Exchange
           </Flex>
         </ModalHeader>
@@ -135,7 +135,7 @@ const ExchangeConnectionModal: React.FC<ExchangeConnectionModalProps> = ({
         <ModalBody>
           {isConnected ? (
             <Box textAlign="center" py={4}>
-              <Icon as={FaCheckCircle} color="green.400" boxSize={12} mb={4} />
+              <Icon as={CheckCircle} color="green.400" boxSize={12} mb={4} />
               <Text color="white" fontSize="lg" fontWeight="bold" mb={2}>
                 Connected to {exchange === 'binance' ? 'Binance' : 'Hyperliquid'}
               </Text>
@@ -145,7 +145,7 @@ const ExchangeConnectionModal: React.FC<ExchangeConnectionModalProps> = ({
               <Button
                 colorScheme="red"
                 onClick={handleDisconnect}
-                leftIcon={<FaTimesCircle />}
+                leftIcon={<Icon as={XCircle} />}
               >
                 Disconnect
               </Button>
@@ -225,7 +225,7 @@ const ExchangeConnectionModal: React.FC<ExchangeConnectionModalProps> = ({
                 onClick={handleConnect} 
                 isLoading={isLoading}
                 loadingText="Connecting"
-                leftIcon={<FaKey />}
+                leftIcon={<Icon as={Key} />}
                 flex="1"
               >
                 Connect

@@ -15,7 +15,7 @@ import {
   Icon,
   VStack
 } from '@chakra-ui/react';
-import { FaExclamationTriangle } from 'react-icons/fa';
+import { AlertTriangle } from 'lucide-react';
 import { binanceClient } from '../../lib/BinanceClient';
 
 interface OpenPositionsProps {
@@ -68,7 +68,7 @@ const OpenPositions: React.FC<OpenPositionsProps> = ({ positions }) => {
     return (
       <Center py={8}>
         <VStack spacing={3}>
-          <Icon as={FaExclamationTriangle} boxSize={8} color="gray.500" />
+          <Icon as={AlertTriangle} color="yellow.400" />
           <Text color="gray.500" textAlign="center">
             No open positions found
           </Text>
