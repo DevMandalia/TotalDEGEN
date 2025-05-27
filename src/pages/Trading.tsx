@@ -15,7 +15,8 @@ import {
   useToast,
   Divider
 } from '@chakra-ui/react';
-import { FaExchangeAlt, FaSync, FaChartLine, FaWallet } from 'react-icons/fa';
+import { FaExchangeAlt, FaSync, FaWallet } from 'react-icons/fa';
+import { LineChart } from 'lucide-react';
 import ExchangeConnectionModal from '../components/trading/ExchangeConnectionModal';
 import TradingNavigation from '../components/trading/TradingNavigation';
 import RobinhoodChart from '../components/trading/RobinhoodChart';
@@ -230,7 +231,7 @@ const Trading: React.FC = () => {
                 <Flex justify="space-between" align="center" mb={4}>
                   <Heading size="md">
                     <Flex align="center">
-                      <Icon as={FaChartLine} mr={2} color="blue.400" />
+                      <Icon as={LineChart} mr={2} color="blue.400" />
                       Portfolio Value
                     </Flex>
                   </Heading>
